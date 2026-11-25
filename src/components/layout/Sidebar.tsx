@@ -19,6 +19,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
     section: "Catalog",
     items: [
       { label: "Products", href: "/dashboard/products", permission: "products.read" },
+      { label: "Product Images", href: "/dashboard/products/images", permission: "products.write" },
       { label: "Categories", href: "/dashboard/categories", permission: "products.read" },
       { label: "Offers", href: "/dashboard/offers", permission: "offers.read" },
       { label: "Meta Catalog", href: "/dashboard/meta-catalog", permission: "products.read" },
