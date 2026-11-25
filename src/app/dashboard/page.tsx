@@ -58,7 +58,7 @@ function KpiCard({
   };
   const t = tones[tone];
   const body = (
-    <div className="bg-white rounded-[10px] px-4 py-3.5 flex items-start gap-3 h-full border border-[var(--hairline)] shadow-[0_1px_2px_rgba(20,20,20,0.03)] transition-colors hover:border-[#d6d6d2]">
+    <div className="bg-white rounded-[10px] px-4 py-3.5 flex items-start gap-3 h-full border border-[var(--hairline)] shadow-[0_1px_2px_rgba(20,20,20,0.03)] transition-all hover:border-tronic-red/30 hover:shadow-[0_2px_8px_rgba(214,0,28,0.08)]">
       <span className={`w-9 h-9 rounded-[8px] ${t.bg} ${t.fg} flex items-center justify-center shrink-0`}>
         <Icon size={19} strokeWidth={1.9} />
       </span>

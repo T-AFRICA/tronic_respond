@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
@@ -157,7 +158,7 @@ export function BulkImageUploader() {
 
       {/* Picker */}
       <div
-        className="border-2 border-dashed border-neutral-border rounded-lg p-8 text-center bg-white cursor-pointer hover:border-charcoal-light"
+        className="group border-2 border-dashed border-neutral-border rounded-xl p-10 text-center bg-white cursor-pointer transition-colors hover:border-tronic-red/50 hover:bg-tronic-red-soft/40"
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
@@ -173,8 +174,14 @@ export function BulkImageUploader() {
           className="hidden"
           onChange={(e) => void onFilesChosen(e.target.files)}
         />
-        <p className="text-sm font-semibold">
-          Drop product images here, or click to choose
+        <span className="inline-flex w-12 h-12 rounded-xl bg-tronic-red-soft text-tronic-red items-center justify-center mb-3 transition-transform group-hover:scale-110">
+          <UploadCloud size={22} strokeWidth={1.8} />
+        </span>
+        <p className="text-[15px] font-bold">
+          Drop product images here
+        </p>
+        <p className="text-sm text-charcoal-light mt-0.5">
+          or <span className="text-tronic-red font-semibold">browse files</span> from your computer
         </p>
         <p className="text-xs text-charcoal-light mt-1">
           Filename = SKU, e.g. <code>TS 5011-BK.jpg</code> matches product{" "}

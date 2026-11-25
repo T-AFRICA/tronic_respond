@@ -117,37 +117,36 @@ export function Sidebar({
   return (
     <aside
       className={clsx(
-        "shrink-0 bg-[#f7f7f5] text-charcoal flex flex-col transition-[width,transform] duration-200 border-r border-[var(--hairline)]",
+        "shrink-0 bg-[#1a1a1d] text-white flex flex-col transition-[width,transform] duration-200",
         // Desktop: sticky column (collapsible). Mobile: off-canvas drawer.
         "fixed inset-y-0 left-0 z-40 h-dvh w-[232px] lg:sticky lg:top-0 lg:z-auto lg:h-auto lg:min-h-screen lg:max-h-screen lg:translate-x-0",
         mobileOpen ? "translate-x-0 shadow-xl" : "-translate-x-full",
         isCollapsed ? "lg:w-[64px]" : "lg:w-[232px]",
       )}
     >
-      {/* Brand — the original mark, in its own red */}
-      <div
-        className={clsx(
-          "h-14 flex items-center border-b border-[var(--hairline)] shrink-0",
-          isCollapsed ? "justify-center px-0" : "px-4",
-        )}
-      >
-        <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
+      {/* Brand block — unmistakable TRONIC red with the white mark */}
+      <div className="bg-tronic-red shrink-0">
+        <Link
+          href="/dashboard"
+          className={clsx(
+            "flex items-center",
+            isCollapsed ? "justify-center h-14" : "px-4 h-16 gap-2.5",
+          )}
+        >
           {isCollapsed ? (
-            <span className="display text-tronic-red text-xl font-black leading-none">
-              T
-            </span>
+            <span className="display text-white text-xl font-black leading-none">T</span>
           ) : (
-            <>
+            <span className="min-w-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/brand/tronic-logo.webp"
                 alt="TRONIC"
-                className="h-[18px] w-auto"
+                className="h-7 w-auto brightness-0 invert"
               />
-              <span className="text-[13px] text-[var(--ink-muted)] font-normal mt-px truncate">
+              <span className="block text-[10.5px] tracking-[0.3em] uppercase text-white/85 mt-1 font-medium">
                 Response
               </span>
-            </>
+            </span>
           )}
         </Link>
       </div>
@@ -163,9 +162,9 @@ export function Sidebar({
             <div key={section || "root"} className="mb-1">
               {section &&
                 (isCollapsed ? (
-                  <div className="mx-3 my-2 border-t border-[var(--hairline)]" />
+                  <div className="mx-3 my-2 border-t border-white/10" />
                 ) : (
-                  <p className="px-4 pt-4 pb-1 text-[10.5px] uppercase tracking-[0.08em] text-[var(--ink-faint)] font-medium select-none">
+                  <p className="px-4 pt-4 pb-1 text-[10.5px] uppercase tracking-[0.1em] text-white/45 font-semibold select-none">
                     {section}
                   </p>
                 ))}
@@ -182,10 +181,13 @@ export function Sidebar({
                       "group flex items-center gap-2.5 text-[13px] mx-2 mb-px rounded-[7px] border",
                       isCollapsed ? "justify-center px-0 py-2" : "px-2.5 py-[5.5px]",
                       active
-                        ? "bg-white text-charcoal font-medium border-[var(--hairline)] shadow-[0_1px_1px_rgba(20,20,20,0.03)]"
-                        : "text-[var(--ink-muted)] border-transparent hover:text-charcoal hover:bg-black/[0.035]",
+                        ? "bg-white/[0.09] text-white font-semibold border-transparent relative"
+                        : "text-white/80 border-transparent hover:text-white hover:bg-white/[0.05]",
                     )}
                   >
+                    {active && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[18px] rounded-r bg-tronic-red" />
+                    )}
                     <Icon
                       size={16}
                       strokeWidth={active ? 2.1 : 1.75}
@@ -193,7 +195,7 @@ export function Sidebar({
                         "shrink-0",
                         active
                           ? "text-tronic-red"
-                          : "text-[var(--ink-faint)] group-hover:text-[var(--ink-muted)]",
+                          : "text-white/60 group-hover:text-white/90",
                       )}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
@@ -209,7 +211,7 @@ export function Sidebar({
       <button
         onClick={toggle}
         className={clsx(
-          "border-t border-[var(--hairline)] hidden lg:flex items-center gap-2 text-[var(--ink-faint)] hover:text-charcoal text-xs py-2.5",
+          "border-t border-white/10 hidden lg:flex items-center gap-2 text-white/45 hover:text-white/85 text-xs py-2.5",
           isCollapsed ? "justify-center" : "px-4",
         )}
         title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
