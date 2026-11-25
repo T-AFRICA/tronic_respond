@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/ui/EmptyState";
+import { MessageSquareText } from "lucide-react";
 import Link from "next/link";
 import { requirePermission } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -127,9 +129,7 @@ export default async function MessageHistoryPage({
           <tbody>
             {(logs ?? []).length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center text-charcoal-light py-6">
-                  No messages recorded yet.
-                </td>
+                <td colSpan={7} className="p-0"><EmptyState icon={MessageSquareText} title="No messages recorded yet" hint="Outbound sends and relevant inbound WhatsApp messages will appear here." /></td>
               </tr>
             )}
             {(logs ?? []).map((m) => {

@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Users } from "lucide-react";
 import Link from "next/link";
 import { requirePermission, hasPermission } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -106,11 +108,7 @@ export default async function CustomersPage({
           <tbody>
             {(customers ?? []).length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center text-charcoal-light py-8">
-                  No customers yet. Customer synchronization from Respond.io
-                  runs in Phase 1C; customers also appear automatically when
-                  they submit a WhatsApp cart.
-                </td>
+                <td colSpan={6} className="p-0"><EmptyState icon={Users} title="No customers yet" hint="Sync your existing Respond.io contacts - customers also appear automatically when they message you on WhatsApp." /></td>
               </tr>
             )}
             {(customers ?? []).map((c) => {

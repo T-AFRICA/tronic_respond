@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Inbox } from "lucide-react";
 import Link from "next/link";
 import { requirePermission } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -84,9 +86,7 @@ export default async function RfqsPage({
           <tbody>
             {(rfqs ?? []).length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center text-charcoal-light py-8">
-                  No quotation requests yet.
-                </td>
+                <td colSpan={7} className="p-0"><EmptyState icon={Inbox} title="No quotation requests yet" hint="Requests appear here when customers submit a WhatsApp cart or the catalog form - or create one manually." actionHref="/dashboard/rfqs/new" actionLabel="Manual RFQ" /></td>
               </tr>
             )}
             {(rfqs ?? []).map((rfq) => {

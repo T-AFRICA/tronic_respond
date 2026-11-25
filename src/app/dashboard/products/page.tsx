@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Package } from "lucide-react";
 import Link from "next/link";
 import { requirePermission, hasPermission } from "@/lib/auth/session";
 import { listProducts, listCategories } from "@/modules/products/service";
@@ -121,10 +123,7 @@ export default async function ProductsPage({
           <tbody>
             {products.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center text-charcoal-light py-8">
-                  No products found.
-                  {canWrite && " Import your catalog to get started."}
-                </td>
+                <td colSpan={6} className="p-0"><EmptyState icon={Package} title="No products found" hint="Adjust the filters, or import your catalog from Excel/CSV." actionHref="/dashboard/products/import" actionLabel="Import products" /></td>
               </tr>
             )}
             {products.map((p) => (

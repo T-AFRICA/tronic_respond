@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Megaphone } from "lucide-react";
 import Link from "next/link";
 import { requirePermission, hasPermission } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -50,9 +52,7 @@ export default async function BroadcastingPage() {
           <tbody>
             {(campaigns ?? []).length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center text-charcoal-light py-8">
-                  No campaigns yet.
-                </td>
+                <td colSpan={5} className="p-0"><EmptyState icon={Megaphone} title="No campaigns yet" hint="Create your first WhatsApp campaign - select offer products, choose the audience and run an internal test." actionHref="/dashboard/broadcasting/new" actionLabel="New Campaign" /></td>
               </tr>
             )}
             {(campaigns ?? []).map((c) => {

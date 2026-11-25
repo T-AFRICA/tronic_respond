@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/ui/EmptyState";
+import { BadgePercent } from "lucide-react";
 import Link from "next/link";
 import { requirePermission, hasPermission } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -114,9 +116,7 @@ export default async function OffersPage({
           <tbody>
             {(offers ?? []).length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center text-charcoal-light py-6">
-                  No offers yet. Create one or import the pilot products.
-                </td>
+                <td colSpan={5} className="p-0"><EmptyState icon={BadgePercent} title="No offers yet" hint="Create an offer or import the pilot products to get started." actionHref="/dashboard/offers/new" actionLabel="New Offer" /></td>
               </tr>
             )}
             {(offers ?? []).map((o) => {

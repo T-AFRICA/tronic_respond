@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/ui/EmptyState";
+import { FileText } from "lucide-react";
 import Link from "next/link";
 import { requirePermission } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -78,9 +80,7 @@ export default async function QuotationsPage({
           <tbody>
             {(quotations ?? []).length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center text-charcoal-light py-8">
-                  No quotations yet — create one from a quotation request.
-                </td>
+                <td colSpan={7} className="p-0"><EmptyState icon={FileText} title="No quotations yet" hint="Create a quotation from an incoming quotation request." actionHref="/dashboard/rfqs" actionLabel="View requests" /></td>
               </tr>
             )}
             {(quotations ?? []).map((q) => {
