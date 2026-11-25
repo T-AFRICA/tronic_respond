@@ -27,11 +27,11 @@ export function Topbar({
     .toUpperCase();
 
   return (
-    <header className="h-14 bg-white/95 backdrop-blur border-b border-neutral-border flex items-center gap-3 sm:gap-4 px-3 sm:px-5 sticky top-0 z-20">
+    <header className="h-14 bg-[#fafaf9]/90 backdrop-blur border-b border-[var(--hairline)] flex items-center gap-3 sm:gap-4 px-3 sm:px-6 sticky top-0 z-20">
       {/* Mobile menu */}
       <button
         onClick={onMenuClick}
-        className="lg:hidden w-9 h-9 rounded-lg border border-neutral-border bg-white flex items-center justify-center text-charcoal-light hover:text-charcoal shrink-0"
+        className="lg:hidden w-8 h-8 rounded-[7px] border border-[var(--hairline)] bg-white flex items-center justify-center text-[var(--ink-muted)] hover:text-charcoal shrink-0"
         title="Menu"
       >
         <Menu size={18} strokeWidth={1.9} />
@@ -41,13 +41,13 @@ export function Topbar({
       <form action="/dashboard/products" className="relative w-full max-w-md">
         <Search
           size={15}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-light/60 pointer-events-none"
+          className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--ink-faint)] pointer-events-none"
         />
         <input
           type="search"
           name="q"
           placeholder="Search products by SKU, name, brand…"
-          className="w-full h-9 rounded-lg border border-neutral-border bg-neutral-bg/60 pl-9 pr-3 text-[13px] placeholder:text-charcoal-light/50 focus:bg-white focus:outline-none focus:border-charcoal-light/40 transition-colors"
+          className="w-full h-8 rounded-[7px] border border-[var(--hairline)] bg-white pl-8 pr-3 text-[13px] placeholder:text-[var(--ink-faint)] focus:outline-none"
         />
       </form>
 
@@ -57,7 +57,7 @@ export function Topbar({
         <div className="hidden sm:block h-6 w-px bg-neutral-border mx-1" />
 
         <div className="flex items-center gap-2.5">
-          <span className="hidden sm:flex w-9 h-9 rounded-full bg-charcoal text-white text-xs font-bold items-center justify-center">
+          <span className="hidden sm:flex w-7 h-7 rounded-full bg-charcoal text-white text-[10px] font-bold items-center justify-center">
             {initials || "?"}
           </span>
           <span className="hidden sm:block leading-tight">
@@ -70,7 +70,7 @@ export function Topbar({
           <button
             type="submit"
             title="Sign out"
-            className="w-9 h-9 rounded-lg border border-neutral-border bg-white flex items-center justify-center text-charcoal-light hover:text-tronic-red hover:border-tronic-red/40 transition-colors"
+            className="w-8 h-8 rounded-[7px] border border-[var(--hairline)] bg-white flex items-center justify-center text-[var(--ink-muted)] hover:text-tronic-red hover:border-tronic-red/30"
           >
             <LogOut size={16} strokeWidth={1.9} />
           </button>

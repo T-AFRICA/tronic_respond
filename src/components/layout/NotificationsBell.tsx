@@ -45,10 +45,10 @@ export function NotificationsBell({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative w-9 h-9 rounded-lg border border-neutral-border bg-white flex items-center justify-center text-charcoal-light hover:text-charcoal hover:border-charcoal-light/40 transition-colors"
+        className="relative w-8 h-8 rounded-[7px] border border-[var(--hairline)] bg-white flex items-center justify-center text-[var(--ink-muted)] hover:text-charcoal"
         title="Notifications"
       >
-        <Bell size={17} strokeWidth={1.9} />
+        <Bell size={16} strokeWidth={1.8} />
         {unreadCount > 0 && (
           <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-tronic-red text-white text-[10px] font-bold flex items-center justify-center shadow">
             {unreadCount > 9 ? "9+" : unreadCount}

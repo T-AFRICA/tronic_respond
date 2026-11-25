@@ -58,12 +58,12 @@ function KpiCard({
   };
   const t = tones[tone];
   const body = (
-    <div className="bg-white rounded-2xl px-4 py-4 flex items-start gap-3 h-full ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(20,20,20,0.05),0_12px_32px_-18px_rgba(20,20,20,0.22)] transition-all hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(20,20,20,0.06),0_18px_40px_-18px_rgba(20,20,20,0.3)]">
-      <span className={`w-10 h-10 rounded-lg ${t.bg} ${t.fg} flex items-center justify-center shrink-0`}>
+    <div className="bg-white rounded-[10px] px-4 py-3.5 flex items-start gap-3 h-full border border-[var(--hairline)] shadow-[0_1px_2px_rgba(20,20,20,0.03)] transition-colors hover:border-[#d6d6d2]">
+      <span className={`w-9 h-9 rounded-[8px] ${t.bg} ${t.fg} flex items-center justify-center shrink-0`}>
         <Icon size={19} strokeWidth={1.9} />
       </span>
       <span className="min-w-0">
-        <span className="block text-[26px] font-bold leading-none tracking-tight">
+        <span className="block text-[24px] font-semibold leading-none tracking-tight">
           {typeof value === "number" ? value.toLocaleString() : value}
         </span>
         <span className="block text-[11px] uppercase tracking-[0.07em] text-charcoal-light mt-1.5 leading-tight">

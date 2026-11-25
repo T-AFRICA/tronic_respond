@@ -51,7 +51,7 @@ export function Shell({
           onMenuClick={() => setMobileOpen(true)}
         />
         {/* Near-white surface: white cards keep visible depth against it */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-auto bg-[#fafaf9]">
+        <main className="flex-1 p-4 sm:p-6 lg:px-8 lg:py-6 overflow-x-auto bg-[var(--surface-canvas)]">
           {children}
         </main>
       </div>
