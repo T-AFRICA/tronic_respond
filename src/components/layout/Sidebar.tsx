@@ -191,13 +191,13 @@ export function Sidebar({
                       isCollapsed ? "justify-center px-0 py-2.5 mx-2 rounded-lg" : "px-4 py-[7px] mx-2 rounded-lg",
                       active
                         ? "bg-white text-tronic-red font-semibold shadow-sm"
-                        : "text-white/90 hover:text-white hover:bg-white/15",
+                        : "text-white/90 hover:bg-white hover:text-tronic-red hover:shadow-sm",
                     )}
                   >
                     <Icon
                       size={17}
                       strokeWidth={active ? 2.2 : 1.8}
-                      className={clsx("shrink-0", active ? "text-tronic-red" : "text-white/90 group-hover:text-white")}
+                      className={clsx("shrink-0", active ? "text-tronic-red" : "text-white/90 group-hover:text-tronic-red")}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
                   </Link>
