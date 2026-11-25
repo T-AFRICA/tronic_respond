@@ -49,15 +49,16 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  // A transient Supabase outage must not take down public pages: treat
-  // failures as "signed out" (protected routes then redirect to /login).
+  // getClaims verifies the JWT locally (cached JWKS) — no network round-trip
+  // per request, which getUser() required. A failure must not take down
+  // public pages: treat it as "signed out" (protected routes redirect).
   let user: unknown = null;
   try {
-    const { data } = await supabase.auth.getUser();
-    user = data.user;
+    const { data } = await supabase.auth.getClaims();
+    user = data?.claims ?? null;
   } catch (e) {
     console.error(
-      "middleware: supabase.auth.getUser failed:",
+      "middleware: auth check failed:",
       e instanceof Error ? e.message : e,
     );
   }

@@ -28,24 +28,28 @@ export const getCurrentProfile = cache(
     } = await supabase.auth.getUser();
     if (!user) return null;
 
+    // One round-trip: profile + role + permissions via nested select
     const { data: profile } = await supabase
       .from("profiles")
       .select(
-        "id, full_name, email, phone, role_id, country_id, is_active, roles(key, name)",
+        "id, full_name, email, phone, role_id, country_id, is_active, roles(key, name, role_permissions(permissions(key)))",
       )
       .eq("id", user.id)
       .single();
 
     if (!profile || !profile.is_active) return null;
 
-    const { data: perms } = await supabase
-      .from("role_permissions")
-      .select("permissions(key)")
-      .eq("role_id", profile.role_id);
-
     const role = Array.isArray(profile.roles)
       ? profile.roles[0]
       : profile.roles;
+    const rolePerms =
+      (
+        role as {
+          role_permissions?: {
+            permissions: { key: string } | { key: string }[] | null;
+          }[];
+        } | null
+      )?.role_permissions ?? [];
 
     return {
       id: profile.id,
@@ -55,15 +59,14 @@ export const getCurrentProfile = cache(
       role_id: profile.role_id,
       role_key: (role?.key ?? "sales_staff") as AppRole,
       role_name: role?.name ?? "",
-      permissions:
-        perms
-          ?.map((p) => {
-            const perm = Array.isArray(p.permissions)
-              ? p.permissions[0]
-              : p.permissions;
-            return perm?.key as string;
-          })
-          .filter(Boolean) ?? [],
+      permissions: rolePerms
+        .map((rp) => {
+          const perm = Array.isArray(rp.permissions)
+            ? rp.permissions[0]
+            : rp.permissions;
+          return perm?.key as string;
+        })
+        .filter(Boolean),
       country_id: profile.country_id,
       is_active: profile.is_active,
     };
