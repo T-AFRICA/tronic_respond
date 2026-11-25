@@ -12,6 +12,7 @@ import {
   sendImageMessage,
 } from "@/integrations/respondio/client";
 import { signCatalogToken } from "@/lib/catalog/links";
+import { respondIoConfig } from "@/lib/config";
 
 /** Product search for the share composer (returns public data + image). */
 export async function searchShareProducts(term: string) {
@@ -103,7 +104,7 @@ export async function shareProducts(payload: unknown) {
   }
   const { customer_id, product_ids, share_kind, note } = parsed.data;
 
-  if (!process.env.RESPONDIO_API_TOKEN) {
+  if (!respondIoConfig.token()) {
     return {
       ok: false as const,
       error:

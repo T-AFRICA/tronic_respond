@@ -8,6 +8,7 @@ import {
   createSupabaseAdminClient,
 } from "@/lib/supabase/server";
 import { listContacts } from "@/integrations/respondio/client";
+import { respondIoConfig } from "@/lib/config";
 
 /**
  * Pulls contacts from Respond.io and upserts them into public.customers.
@@ -19,7 +20,7 @@ import { listContacts } from "@/integrations/respondio/client";
 export async function syncCustomersFromRespondio() {
   await requirePermission("customers.write");
 
-  if (!process.env.RESPONDIO_API_TOKEN) {
+  if (!respondIoConfig.token()) {
     redirect("/dashboard/customers?error=norespondio");
   }
 

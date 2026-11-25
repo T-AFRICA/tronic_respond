@@ -1,5 +1,6 @@
 import { requirePermission } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { respondIoConfig } from "@/lib/config";
 
 export const metadata = { title: "Integrations" };
 export const dynamic = "force-dynamic";
@@ -31,7 +32,7 @@ export default async function IntegrationsPage() {
   ]);
 
   const envChecks = [
-    { name: "Respond.io API token", set: Boolean(process.env.RESPONDIO_API_TOKEN) },
+    { name: "Respond.io API token", set: Boolean(respondIoConfig.token()) },
     { name: "Respond.io webhook secret", set: Boolean(process.env.RESPONDIO_WEBHOOK_SECRET) },
     { name: "Meta access token", set: Boolean(process.env.META_ACCESS_TOKEN) },
     { name: "Meta catalog ID", set: Boolean(process.env.META_CATALOG_ID) },

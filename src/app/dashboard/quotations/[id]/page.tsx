@@ -28,7 +28,7 @@ const BANNERS: Record<string, { ok: boolean; text: string }> = {
   noitems: { ok: false, text: "Add at least one line item first." },
   notapproved: { ok: false, text: "The quotation must be approved first." },
   nopdf: { ok: false, text: "Generate the PDF before sending." },
-  norespondio: { ok: false, text: "Respond.io is not configured (RESPONDIO_API_TOKEN)." },
+  norespondio: { ok: false, text: "Respond.io is not configured (RESPOND_IO_API_TOKEN)." },
   nocontact: { ok: false, text: "This customer has no Respond.io contact ID — link it on the customer record, or send the PDF manually from the Respond.io inbox." },
   sendfailed: { ok: false, text: "Respond.io rejected the send — check Integrations and retry, or deliver manually from the inbox." },
   sign: { ok: false, text: "Could not create a secure document link." },

@@ -21,6 +21,7 @@ import {
   sendTextMessage,
 } from "@/integrations/respondio/client";
 import type { QuotationStatus } from "@/lib/types";
+import { respondIoConfig } from "@/lib/config";
 
 const lineSchema = z.object({
   product_id: z.string().uuid().nullable(),
@@ -387,7 +388,7 @@ export async function sendQuotation(quotationId: string) {
   if (!q.pdf_storage_path) {
     redirect(`/dashboard/quotations/${quotationId}?error=nopdf`);
   }
-  if (!process.env.RESPONDIO_API_TOKEN) {
+  if (!respondIoConfig.token()) {
     redirect(`/dashboard/quotations/${quotationId}?error=norespondio`);
   }
 

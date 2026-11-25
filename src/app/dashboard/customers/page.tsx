@@ -66,7 +66,7 @@ export default async function CustomersPage({
       )}
       {sp.error === "norespondio" && (
         <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded px-3 py-2">
-          Respond.io is not configured (RESPONDIO_API_TOKEN) — add credentials
+          Respond.io is not configured (RESPOND_IO_API_TOKEN) — add credentials
           on the server to enable customer sync.
         </p>
       )}
