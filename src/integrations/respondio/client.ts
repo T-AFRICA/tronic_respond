@@ -94,10 +94,26 @@ export async function getContactByPhone(phone: string) {
 export async function listContacts(cursor?: string, limit = 100) {
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set("cursorId", cursor);
-  return request<{ items: RespondIoContact[]; pagination?: { next?: string } }>(
-    `/contact/list?${params}`,
-    { method: "POST", body: JSON.stringify({ search: "", timezone: "UTC" }) },
-  );
+  const res = await request<{
+    items: RespondIoContact[];
+    pagination?: { next?: string | null };
+  }>(`/contact/list?${params}`, {
+    method: "POST",
+    // Verified against the live workspace (2026-11-25): the API requires all
+    // three fields — search (may be empty), timezone, and filter {"$and": []}.
+    body: JSON.stringify({ search: "", timezone: "UTC", filter: { $and: [] } }),
+  });
+
+  // pagination.next is a FULL URL; extract its cursorId for the next call.
+  let next: string | undefined;
+  if (res.pagination?.next) {
+    try {
+      next = new URL(res.pagination.next).searchParams.get("cursorId") ?? undefined;
+    } catch {
+      next = undefined;
+    }
+  }
+  return { items: res.items ?? [], pagination: { next } };
 }
 
 export async function addContactTags(

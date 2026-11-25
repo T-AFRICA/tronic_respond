@@ -49,11 +49,7 @@ async function call(label, path, init = {}) {
 }
 
 await call("channels", "/space/channel");
-await call("contacts (app payload)", "/contact/list?limit=5", {
+await call("contacts", "/contact/list?limit=5", {
   method: "POST",
-  body: JSON.stringify({ search: "", timezone: "UTC" }),
-});
-await call("contacts (empty body)", "/contact/list?limit=5", {
-  method: "POST",
-  body: JSON.stringify({}),
+  body: JSON.stringify({ search: "", timezone: "UTC", filter: { $and: [] } }),
 });
