@@ -16,8 +16,10 @@
   --color-neutral-bg: #f5f5f4;
   --color-neutral-border: #e4e4e2;
 
-  --font-sans: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-display: "Arial Black", "Arial Bold", Arial, sans-serif;
+  --font-sans: "Myriad Pro", var(--font-inter), "Segoe UI", system-ui,
+    -apple-system, sans-serif;
+  --font-display: var(--font-archivo-black), "Arial Black", "Arial Bold", Arial,
+    sans-serif;
 }
 
 :root {
@@ -27,12 +29,23 @@
 body {
   @apply bg-neutral-bg text-charcoal antialiased;
   font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "tnum" 0;
+  letter-spacing: -0.006em;
 }
 
+.display {
+  font-family: var(--font-display);
+  letter-spacing: 0;
+}
 h1.display,
 h2.display {
-  font-family: var(--font-display);
   letter-spacing: -0.01em;
+}
+
+/* Numbers in tables/KPIs align like a spreadsheet */
+table.data-table td,
+.display {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Compact enterprise data tables */
@@ -62,10 +75,15 @@ table.data-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* Cards: consistent elevation for every white panel */
+/* Cards: consistent elevation + unified 12px radius for every panel */
 .bg-white.border.border-neutral-border.rounded-lg,
-.border.border-neutral-border.rounded-lg {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+.border.border-neutral-border.rounded-lg,
+.bg-white.border.border-neutral-border.rounded-xl,
+.border.border-neutral-border.rounded-xl {
+  border-radius: 0.75rem;
+  box-shadow:
+    0 1px 2px rgba(20, 20, 20, 0.05),
+    0 2px 8px rgba(20, 20, 20, 0.03);
   background-clip: padding-box;
 }
 

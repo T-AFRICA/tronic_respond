@@ -50,7 +50,10 @@ export function Shell({
           unreadCount={unreadCount}
           onMenuClick={() => setMobileOpen(true)}
         />
-        <main className="flex-1 p-4 sm:p-6 overflow-x-auto bg-white">{children}</main>
+        {/* Near-white surface: white cards keep visible depth against it */}
+        <main className="flex-1 p-4 sm:p-6 overflow-x-auto bg-[#fafaf9]">
+          {children}
+        </main>
       </div>
     </div>
   );
