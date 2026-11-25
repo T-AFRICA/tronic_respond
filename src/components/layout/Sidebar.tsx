@@ -188,16 +188,16 @@ export function Sidebar({
                     title={isCollapsed ? item.label : undefined}
                     className={clsx(
                       "group relative flex items-center gap-3 text-[13.5px] transition-colors",
-                      isCollapsed ? "justify-center px-0 py-2.5 mx-2 rounded-lg" : "px-4 py-[7px] mx-2 rounded-lg",
+                      isCollapsed ? "justify-center px-0 py-2.5 mx-2 mb-1 rounded-lg" : "px-4 py-2 mx-2 mb-1 rounded-lg",
                       active
-                        ? "bg-white text-tronic-red font-semibold shadow-sm"
-                        : "text-white/90 hover:bg-white hover:text-tronic-red hover:shadow-sm",
+                        ? "bg-white text-tronic-red font-bold shadow-md border-l-4 border-charcoal"
+                        : "bg-white/95 text-tronic-red font-medium shadow-sm hover:bg-white hover:shadow",
                     )}
                   >
                     <Icon
                       size={17}
                       strokeWidth={active ? 2.2 : 1.8}
-                      className={clsx("shrink-0", active ? "text-tronic-red" : "text-white/90 group-hover:text-tronic-red")}
+                      className={clsx("shrink-0 text-tronic-red")}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
                   </Link>
