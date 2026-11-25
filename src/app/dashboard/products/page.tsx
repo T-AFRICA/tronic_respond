@@ -162,19 +162,18 @@ export default async function ProductsPage({
         className="bg-white border border-neutral-border rounded-xl p-2.5 flex gap-2 flex-wrap items-center"
         action="/dashboard/products"
       >
-        <div className="relative flex-1 min-w-56">
-          <Search
-            size={15}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-light/50 pointer-events-none"
-          />
-          <input
-            type="search"
-            name="q"
-            defaultValue={params.q ?? ""}
-            placeholder="Search SKU, name, brand, model…"
-            className="w-full rounded-lg border border-neutral-border bg-neutral-bg/50 pl-9 pr-3 py-2 text-sm focus:bg-white focus:outline-none"
-          />
-        </div>
+        {params.q ? (
+          <span className="inline-flex items-center gap-1.5 text-sm bg-neutral-bg border border-neutral-border rounded-lg px-3 py-2">
+            <Search size={14} className="text-charcoal-light" />
+            &ldquo;{params.q}&rdquo;
+          </span>
+        ) : (
+          <span className="text-xs text-charcoal-light px-1">
+            Search products from the top bar
+          </span>
+        )}
+        {params.q && <input type="hidden" name="q" value={params.q} />}
+        <span className="flex-1" />
         <select
           name="category"
           defaultValue={params.category ?? ""}

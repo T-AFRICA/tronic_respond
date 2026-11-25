@@ -59,15 +59,16 @@ table.data-table {
   border-spacing: 0;
 }
 table.data-table th {
-  @apply text-left font-semibold text-charcoal-light uppercase text-[11px] px-4 py-2.5 border-b border-neutral-border;
-  letter-spacing: 0.06em;
-  background: #fafafa;
+  @apply text-left font-semibold text-charcoal-light uppercase text-[10.5px] px-4 py-3 bg-white;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid #ededeb;
   position: sticky;
   top: 0;
   z-index: 1;
 }
 table.data-table td {
-  @apply px-4 py-2.5 border-b border-neutral-border bg-white align-middle;
+  @apply px-4 py-3 bg-white align-middle;
+  border-bottom: 1px solid #f1f1ef;
 }
 table.data-table tbody tr {
   transition: background-color 0.1s ease;

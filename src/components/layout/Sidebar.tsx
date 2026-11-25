@@ -151,7 +151,7 @@ export function Sidebar({
                 <span className="text-[13px] font-semibold tracking-[0.35em] uppercase text-white">
                   Response
                 </span>
-                <span className="block text-[10px] text-white/35 mt-0.5">
+                <span className="block text-[10px] text-white/50 mt-0.5">
                   Faster Responses. Smarter Sales.
                 </span>
               </span>
@@ -173,7 +173,7 @@ export function Sidebar({
                 (isCollapsed ? (
                   <div className="mx-4 my-2 border-t border-white/[0.08]" />
                 ) : (
-                  <p className="px-5 pt-3 pb-1.5 text-[10px] uppercase tracking-[0.16em] text-white/35 font-semibold">
+                  <p className="px-5 pt-3 pb-1.5 text-[10px] uppercase tracking-[0.16em] text-white/50 font-semibold">
                     {section}
                   </p>
                 ))}
@@ -191,7 +191,7 @@ export function Sidebar({
                       isCollapsed ? "justify-center px-0 py-2.5 mx-2 rounded-lg" : "px-4 py-[7px] mx-2 rounded-lg",
                       active
                         ? "bg-white/[0.07] text-white font-semibold"
-                        : "text-white/55 hover:text-white hover:bg-white/[0.05]",
+                        : "text-white/75 hover:text-white hover:bg-white/[0.06]",
                     )}
                   >
                     {active && (
@@ -200,7 +200,7 @@ export function Sidebar({
                     <Icon
                       size={17}
                       strokeWidth={active ? 2.2 : 1.8}
-                      className={clsx("shrink-0", active ? "text-tronic-red" : "text-white/45 group-hover:text-white/85")}
+                      className={clsx("shrink-0", active ? "text-tronic-red" : "text-white/65 group-hover:text-white/90")}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
                   </Link>
