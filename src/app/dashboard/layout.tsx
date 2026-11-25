@@ -1,7 +1,6 @@
 import { requireProfile } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Topbar } from "@/components/layout/Topbar";
+import { Shell } from "@/components/layout/Shell";
 import type { NotificationItem } from "@/components/layout/NotificationsBell";
 
 export default async function DashboardLayout({
@@ -27,17 +26,14 @@ export default async function DashboardLayout({
   ]);
 
   return (
-    <div className="min-h-screen flex">
-      <Sidebar permissions={profile.permissions} />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Topbar
-          name={profile.full_name}
-          roleName={profile.role_name}
-          notifications={(notifications ?? []) as NotificationItem[]}
-          unreadCount={unreadRes.count ?? 0}
-        />
-        <main className="flex-1 p-6 overflow-x-auto">{children}</main>
-      </div>
-    </div>
+    <Shell
+      permissions={profile.permissions}
+      name={profile.full_name}
+      roleName={profile.role_name}
+      notifications={(notifications ?? []) as NotificationItem[]}
+      unreadCount={unreadRes.count ?? 0}
+    >
+      {children}
+    </Shell>
   );
 }

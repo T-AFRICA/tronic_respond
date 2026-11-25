@@ -127,6 +127,16 @@ textarea:focus {
   background: rgba(255, 255, 255, 0.15);
 }
 
+/* Mobile: any container directly holding a data table scrolls horizontally
+   instead of crushing the columns. */
+div:has(> table.data-table) {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+table.data-table {
+  min-width: 560px;
+}
+
 /* Smooth page feel */
 html {
   scroll-behavior: smooth;

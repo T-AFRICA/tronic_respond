@@ -1,4 +1,4 @@
-import { Search, LogOut } from "lucide-react";
+import { Search, LogOut, Menu } from "lucide-react";
 import { logout } from "@/app/login/actions";
 import {
   NotificationsBell,
@@ -10,11 +10,13 @@ export function Topbar({
   roleName,
   notifications,
   unreadCount,
+  onMenuClick,
 }: {
   name: string;
   roleName: string;
   notifications: NotificationItem[];
   unreadCount: number;
+  onMenuClick?: () => void;
 }) {
   const initials = name
     .split(/\s+/)
@@ -25,7 +27,16 @@ export function Topbar({
     .toUpperCase();
 
   return (
-    <header className="h-14 bg-white/95 backdrop-blur border-b border-neutral-border flex items-center gap-4 px-5 sticky top-0 z-20">
+    <header className="h-14 bg-white/95 backdrop-blur border-b border-neutral-border flex items-center gap-3 sm:gap-4 px-3 sm:px-5 sticky top-0 z-20">
+      {/* Mobile menu */}
+      <button
+        onClick={onMenuClick}
+        className="lg:hidden w-9 h-9 rounded-lg border border-neutral-border bg-white flex items-center justify-center text-charcoal-light hover:text-charcoal shrink-0"
+        title="Menu"
+      >
+        <Menu size={18} strokeWidth={1.9} />
+      </button>
+
       {/* Global product search */}
       <form action="/dashboard/products" className="relative w-full max-w-md">
         <Search
@@ -40,13 +51,13 @@ export function Topbar({
         />
       </form>
 
-      <div className="flex items-center gap-2.5 ml-auto shrink-0">
+      <div className="flex items-center gap-2 sm:gap-2.5 ml-auto shrink-0">
         <NotificationsBell notifications={notifications} unreadCount={unreadCount} />
 
-        <div className="h-6 w-px bg-neutral-border mx-1" />
+        <div className="hidden sm:block h-6 w-px bg-neutral-border mx-1" />
 
         <div className="flex items-center gap-2.5">
-          <span className="w-9 h-9 rounded-full bg-charcoal text-white text-xs font-bold flex items-center justify-center">
+          <span className="hidden sm:flex w-9 h-9 rounded-full bg-charcoal text-white text-xs font-bold items-center justify-center">
             {initials || "?"}
           </span>
           <span className="hidden sm:block leading-tight">

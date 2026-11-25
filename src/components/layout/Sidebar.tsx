@@ -79,7 +79,15 @@ const NAV: { section: string; items: NavItem[] }[] = [
   },
 ];
 
-export function Sidebar({ permissions }: { permissions: string[] }) {
+export function Sidebar({
+  permissions,
+  mobileOpen = false,
+  onNavigate,
+}: {
+  permissions: string[];
+  mobileOpen?: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -95,6 +103,10 @@ export function Sidebar({ permissions }: { permissions: string[] }) {
     localStorage.setItem("tr-sidebar-collapsed", next ? "1" : "0");
   }
 
+  // The icon-only collapsed mode is desktop-only; the mobile drawer always
+  // shows full labels.
+  const isCollapsed = collapsed && !mobileOpen;
+
   // Longest-prefix match so e.g. /dashboard/products/images highlights
   // "Product Images", not "Products".
   const allHrefs = NAV.flatMap((s) => s.items.map((i) => i.href));
@@ -105,22 +117,25 @@ export function Sidebar({ permissions }: { permissions: string[] }) {
   return (
     <aside
       className={clsx(
-        "shrink-0 bg-[#1d1d1f] text-white flex flex-col min-h-screen sticky top-0 max-h-screen transition-[width] duration-200",
-        collapsed ? "w-[72px]" : "w-64",
+        "shrink-0 bg-[#1d1d1f] text-white flex flex-col transition-[width,transform] duration-200",
+        // Desktop: sticky column (collapsible). Mobile: off-canvas drawer.
+        "fixed inset-y-0 left-0 z-40 h-dvh w-64 lg:sticky lg:top-0 lg:z-auto lg:h-auto lg:min-h-screen lg:max-h-screen lg:translate-x-0",
+        mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full",
+        isCollapsed ? "lg:w-[72px]" : "lg:w-64",
       )}
     >
       {/* Brand */}
       <div
         className={clsx(
           "border-b border-white/10 flex items-center",
-          collapsed ? "px-0 py-4 justify-center" : "px-5 py-4",
+          isCollapsed ? "px-0 py-4 justify-center" : "px-5 py-4",
         )}
       >
         <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0">
           <span className="w-9 h-9 shrink-0 rounded-lg bg-tronic-red flex items-center justify-center display font-black text-white text-lg shadow-[0_2px_8px_rgba(214,0,28,0.4)]">
             T
           </span>
-          {!collapsed && (
+          {!isCollapsed && (
             <span className="min-w-0">
               <span className="block leading-tight truncate">
                 <span className="display font-black text-white text-[17px]">TRONIC</span>
@@ -144,7 +159,7 @@ export function Sidebar({ permissions }: { permissions: string[] }) {
           return (
             <div key={section || "root"} className="mb-2">
               {section &&
-                (collapsed ? (
+                (isCollapsed ? (
                   <div className="mx-4 my-2 border-t border-white/10" />
                 ) : (
                   <p className="px-5 pt-3 pb-1.5 text-[10px] uppercase tracking-[0.14em] text-white/35 font-semibold">
@@ -158,10 +173,11 @@ export function Sidebar({ permissions }: { permissions: string[] }) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    title={collapsed ? item.label : undefined}
+                    onClick={onNavigate}
+                    title={isCollapsed ? item.label : undefined}
                     className={clsx(
                       "group relative flex items-center gap-3 text-[13.5px] transition-colors",
-                      collapsed ? "justify-center px-0 py-2.5 mx-2 rounded-lg" : "px-4 py-[7px] mx-2 rounded-lg",
+                      isCollapsed ? "justify-center px-0 py-2.5 mx-2 rounded-lg" : "px-4 py-[7px] mx-2 rounded-lg",
                       active
                         ? "bg-white/[0.08] text-white font-medium"
                         : "text-white/60 hover:text-white hover:bg-white/[0.05]",
@@ -175,7 +191,7 @@ export function Sidebar({ permissions }: { permissions: string[] }) {
                       strokeWidth={active ? 2.2 : 1.8}
                       className={clsx("shrink-0", active ? "text-tronic-red" : "text-white/50 group-hover:text-white/80")}
                     />
-                    {!collapsed && <span className="truncate">{item.label}</span>}
+                    {!isCollapsed && <span className="truncate">{item.label}</span>}
                   </Link>
                 );
               })}
@@ -188,14 +204,14 @@ export function Sidebar({ permissions }: { permissions: string[] }) {
       <button
         onClick={toggle}
         className={clsx(
-          "border-t border-white/10 flex items-center gap-2 text-white/40 hover:text-white/80 text-xs transition-colors py-3",
-          collapsed ? "justify-center" : "px-5",
+          "border-t border-white/10 hidden lg:flex items-center gap-2 text-white/40 hover:text-white/80 text-xs transition-colors py-3",
+          isCollapsed ? "justify-center" : "px-5",
         )}
-        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {hydrated &&
-          (collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />)}
-        {!collapsed && <span>Collapse</span>}
+          (isCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />)}
+        {!isCollapsed && <span>Collapse</span>}
       </button>
     </aside>
   );
