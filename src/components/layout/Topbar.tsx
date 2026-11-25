@@ -1,20 +1,67 @@
+import { Search, LogOut } from "lucide-react";
 import { logout } from "@/app/login/actions";
+import {
+  NotificationsBell,
+  type NotificationItem,
+} from "@/components/layout/NotificationsBell";
 
-export function Topbar({ name, roleName }: { name: string; roleName: string }) {
+export function Topbar({
+  name,
+  roleName,
+  notifications,
+  unreadCount,
+}: {
+  name: string;
+  roleName: string;
+  notifications: NotificationItem[];
+  unreadCount: number;
+}) {
+  const initials = name
+    .split(/\s+/)
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   return (
-    <header className="h-14 bg-white border-b border-neutral-border flex items-center justify-between px-6">
-      <div />
-      <div className="flex items-center gap-4">
-        <div className="text-right">
-          <p className="text-sm font-medium leading-tight">{name}</p>
-          <p className="text-xs text-charcoal-light leading-tight">{roleName}</p>
+    <header className="h-14 bg-white/95 backdrop-blur border-b border-neutral-border flex items-center gap-4 px-5 sticky top-0 z-20">
+      {/* Global product search */}
+      <form action="/dashboard/products" className="relative w-full max-w-md">
+        <Search
+          size={15}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-light/60 pointer-events-none"
+        />
+        <input
+          type="search"
+          name="q"
+          placeholder="Search products by SKU, name, brand…"
+          className="w-full h-9 rounded-lg border border-neutral-border bg-neutral-bg/60 pl-9 pr-3 text-[13px] placeholder:text-charcoal-light/50 focus:bg-white focus:outline-none focus:border-charcoal-light/40 transition-colors"
+        />
+      </form>
+
+      <div className="flex items-center gap-2.5 ml-auto shrink-0">
+        <NotificationsBell notifications={notifications} unreadCount={unreadCount} />
+
+        <div className="h-6 w-px bg-neutral-border mx-1" />
+
+        <div className="flex items-center gap-2.5">
+          <span className="w-9 h-9 rounded-full bg-charcoal text-white text-xs font-bold flex items-center justify-center">
+            {initials || "?"}
+          </span>
+          <span className="hidden sm:block leading-tight">
+            <span className="block text-[13px] font-semibold">{name}</span>
+            <span className="block text-[11px] text-charcoal-light">{roleName}</span>
+          </span>
         </div>
+
         <form action={logout}>
           <button
             type="submit"
-            className="text-xs text-charcoal-light hover:text-tronic-red border border-neutral-border rounded px-3 py-1.5 transition-colors"
+            title="Sign out"
+            className="w-9 h-9 rounded-lg border border-neutral-border bg-white flex items-center justify-center text-charcoal-light hover:text-tronic-red hover:border-tronic-red/40 transition-colors"
           >
-            Sign out
+            <LogOut size={16} strokeWidth={1.9} />
           </button>
         </form>
       </div>
