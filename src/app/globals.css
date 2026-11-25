@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/*
+  TRONIC Response — brand design tokens.
+  Brand: TRONIC Red, white, soft neutral gray, dark charcoal typography.
+  Primary UI font: Myriad Pro (licensed asset to be supplied; falls back to
+  system sans until the licensed font files are added to /public/fonts).
+  Display headings: Arial Black.
+*/
+@theme {
+  --color-tronic-red: #d6001c;
+  --color-tronic-red-dark: #a80016;
+  --color-tronic-red-soft: #fdeef0;
+  --color-charcoal: #2b2b2b;
+  --color-charcoal-light: #4a4a4a;
+  --color-neutral-bg: #f5f5f4;
+  --color-neutral-border: #e4e4e2;
+
+  --font-sans: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-display: "Arial Black", "Arial Bold", Arial, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-neutral-bg text-charcoal antialiased;
+  font-family: var(--font-sans);
+}
+
+h1.display,
+h2.display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Compact enterprise data tables */
+table.data-table {
+  @apply w-full text-sm;
+}
+table.data-table th {
+  @apply text-left font-semibold text-charcoal-light uppercase tracking-wide text-xs px-3 py-2 border-b border-neutral-border bg-white;
+}
+table.data-table td {
+  @apply px-3 py-2 border-b border-neutral-border bg-white;
+}
+table.data-table tr:hover td {
+  @apply bg-neutral-bg;
+}

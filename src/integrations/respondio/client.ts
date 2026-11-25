@@ -1,0 +1,217 @@
+/**
+ * Respond.io integration adapter.
+ *
+ * IMPORTANT — capability verification policy:
+ * Every method here wraps an endpoint of the Respond.io Developer API v2
+ * (https://developers.respond.io). Before any feature that depends on a
+ * method goes live, the endpoint MUST be verified against the workspace's
+ * actual subscription/plan via the Integrations screen's capability check.
+ * Methods marked `verified: pending` must not be relied on by core flows —
+ * every flow that uses them has a manual fallback.
+ *
+ * This adapter never invents endpoints: if a capability is not available,
+ * the UI directs staff to perform the action inside Respond.io itself
+ * (e.g. native product sharing, native Broadcast module).
+ */
+
+import { respondIoConfig } from "@/lib/config";
+
+export class RespondIoError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly body: unknown,
+  ) {
+    super(message);
+    this.name = "RespondIoError";
+  }
+}
+
+async function request<T>(
+  path: string,
+  init: RequestInit = {},
+  retries = 2,
+): Promise<T> {
+  const token = respondIoConfig.token();
+  if (!token) throw new Error("RESPOND_IO_API_TOKEN is not configured");
+
+  const res = await fetch(`${respondIoConfig.baseUrl()}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...init.headers,
+    },
+  });
+
+  // Provider rate limiting: back off and retry
+  if (res.status === 429 && retries > 0) {
+    const retryAfter = Number(res.headers.get("retry-after") ?? "2");
+    await new Promise((r) => setTimeout(r, Math.min(retryAfter, 30) * 1000));
+    return request<T>(path, init, retries - 1);
+  }
+
+  if (!res.ok) {
+    let body: unknown = null;
+    try {
+      body = await res.json();
+    } catch {
+      body = await res.text().catch(() => null);
+    }
+    throw new RespondIoError(
+      `Respond.io ${init.method ?? "GET"} ${path} failed (${res.status})`,
+      res.status,
+      body,
+    );
+  }
+
+  if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
+}
+
+export type RespondIoContact = {
+  id: number;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
+  email: string | null;
+  countryCode: string | null;
+  tags?: string[];
+  assignee?: { id: number } | null;
+};
+
+// ---------- Contacts (verified: standard Developer API) ----------
+
+export async function getContact(contactId: string | number) {
+  return request<RespondIoContact>(`/contact/${contactId}`);
+}
+
+export async function getContactByPhone(phone: string) {
+  // Contacts are addressable by identifier "phone:<E.164>"
+  return request<RespondIoContact>(`/contact/phone:${encodeURIComponent(phone)}`);
+}
+
+export async function listContacts(cursor?: string, limit = 100) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (cursor) params.set("cursorId", cursor);
+  return request<{ items: RespondIoContact[]; pagination?: { next?: string } }>(
+    `/contact/list?${params}`,
+    { method: "POST", body: JSON.stringify({ search: "", timezone: "UTC" }) },
+  );
+}
+
+export async function addContactTags(
+  contactId: string | number,
+  tags: string[],
+) {
+  return request(`/contact/${contactId}/tag`, {
+    method: "POST",
+    body: JSON.stringify(tags),
+  });
+}
+
+// ---------- Messaging (verified: standard Developer API) ----------
+
+/** Plain text message inside an open 24h customer-service window. */
+export async function sendTextMessage(
+  contactId: string | number,
+  text: string,
+) {
+  return request<{ messageId: number }>(`/contact/${contactId}/message`, {
+    method: "POST",
+    body: JSON.stringify({ message: { type: "text", text } }),
+  });
+}
+
+/** Document attachment (e.g. quotation PDF) via public/signed URL. */
+export async function sendDocumentMessage(
+  contactId: string | number,
+  fileUrl: string,
+  _fileName?: string,
+) {
+  return request<{ messageId: number }>(`/contact/${contactId}/message`, {
+    method: "POST",
+    body: JSON.stringify({
+      message: { type: "attachment", attachment: { type: "file", url: fileUrl } },
+    }),
+  });
+}
+
+/** Image message (product sharing). */
+export async function sendImageMessage(
+  contactId: string | number,
+  imageUrl: string,
+) {
+  return request<{ messageId: number }>(`/contact/${contactId}/message`, {
+    method: "POST",
+    body: JSON.stringify({
+      message: { type: "attachment", attachment: { type: "image", url: imageUrl } },
+    }),
+  });
+}
+
+/**
+ * Approved WhatsApp template message (outside the 24h window).
+ * Template must already be approved in the connected WABA.
+ * channelId targets the WhatsApp channel (defaults to RESPOND_IO_CHANNEL_ID).
+ */
+export async function sendTemplateMessage(
+  contactId: string | number,
+  templateName: string,
+  languageCode: string,
+  components?: unknown[],
+  channelId?: string | number,
+) {
+  const channel = channelId ?? respondIoConfig.channelId();
+  return request<{ messageId: number }>(`/contact/${contactId}/message`, {
+    method: "POST",
+    body: JSON.stringify({
+      ...(channel ? { channelId: Number(channel) } : {}),
+      message: {
+        type: "whatsapp_template",
+        template: { name: templateName, languageCode, components },
+      },
+    }),
+  });
+}
+
+// ---------- Space / channels (verified: GET /v2/space/channel tested live) ----------
+
+export type RespondIoChannel = {
+  id: number;
+  name?: string;
+  source?: string;
+  status?: string;
+};
+
+/** List connected channels; used to verify the WhatsApp channel (582135). */
+export async function listChannels() {
+  return request<{ items?: RespondIoChannel[] } | RespondIoChannel[]>(
+    `/space/channel`,
+  );
+}
+
+/** Assign the conversation to a workspace user. verified: pending (plan-dependent). */
+export async function assignConversation(
+  contactId: string | number,
+  assigneeId: number | null,
+) {
+  return request(`/contact/${contactId}/conversation/assignee`, {
+    method: "POST",
+    body: JSON.stringify({ assignee: assigneeId }),
+  });
+}
+
+/** Lightweight health check used by the Integrations monitor. */
+export async function healthCheck(): Promise<boolean> {
+  try {
+    await request(`/space/users`, {}, 0);
+    return true;
+  } catch (e) {
+    if (e instanceof RespondIoError && e.status !== 401 && e.status !== 403) {
+      // 4xx other than auth may still mean the API is reachable
+      return e.status < 500;
+    }
+    return false;
+  }
+}
