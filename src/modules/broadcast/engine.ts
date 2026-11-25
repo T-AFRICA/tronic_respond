@@ -254,7 +254,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
 
     const { data: customers } = await admin
       .from("customers")
-      .select("id, phone, respondio_contact_id, is_blocked")
+      .select("id, whatsapp_phone, respondio_contact_id, is_blocked")
       .in("id", batch.map((b) => b.customer_id));
     const customerOf = new Map((customers ?? []).map((c) => [c.id, c]));
 
@@ -263,8 +263,8 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
       const customer = customerOf.get(recipient.customer_id);
       const contactRef = customer?.respondio_contact_id
         ? customer.respondio_contact_id
-        : customer?.phone
-          ? `phone:${customer.phone}`
+        : customer?.whatsapp_phone
+          ? `phone:${customer.whatsapp_phone}`
           : null;
 
       if (!customer || customer.is_blocked || !contactRef) {

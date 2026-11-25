@@ -176,36 +176,53 @@ export async function decideCampaign(campaignId: string, formData: FormData) {
 
   const admin = createSupabaseAdminClient();
 
-  // ----- Resolve audience -----
-  let customerIds: string[] = [];
+  // ----- Resolve audience (paginated — PostgREST caps responses at 1000 rows) -----
+  const customerIds: string[] = [];
   if (campaign.segment_id) {
-    const { data: members } = await admin
-      .from("customer_segment_members")
-      .select("customer_id")
-      .eq("segment_id", campaign.segment_id);
-    customerIds = (members ?? []).map((m) => m.customer_id);
+    for (let fromIdx = 0; ; fromIdx += 1000) {
+      const { data: members } = await admin
+        .from("customer_segment_members")
+        .select("customer_id")
+        .eq("segment_id", campaign.segment_id)
+        .order("customer_id")
+        .range(fromIdx, fromIdx + 999);
+      customerIds.push(...(members ?? []).map((m) => m.customer_id));
+      if (!members || members.length < 1000) break;
+    }
   } else {
-    const { data: all } = await admin.from("customers").select("id").limit(50000);
-    customerIds = (all ?? []).map((c) => c.id);
+    for (let fromIdx = 0; ; fromIdx += 1000) {
+      const { data: all } = await admin
+        .from("customers")
+        .select("id")
+        .order("id")
+        .range(fromIdx, fromIdx + 999);
+      customerIds.push(...(all ?? []).map((c) => c.id));
+      if (!all || all.length < 1000) break;
+    }
   }
 
-  // ----- Suppression: blocked + revoked consent -----
-  const { data: blocked } = await admin
-    .from("customers")
-    .select("id")
-    .eq("is_blocked", true)
-    .in("id", customerIds.slice(0, 50000));
-  const { data: revoked } = await admin
-    .from("current_customer_consents")
-    .select("customer_id")
-    .eq("channel", "whatsapp_marketing")
-    .eq("status", "revoked")
-    .in("customer_id", customerIds.slice(0, 50000));
-
-  const suppressedSet = new Set([
-    ...(blocked ?? []).map((b) => b.id),
-    ...(revoked ?? []).map((r) => r.customer_id),
-  ]);
+  // ----- Suppression: blocked + revoked consent (global sets — huge IN lists fail) -----
+  const suppressedSet = new Set<string>();
+  for (let fromIdx = 0; ; fromIdx += 1000) {
+    const { data: blocked } = await admin
+      .from("customers")
+      .select("id")
+      .eq("is_blocked", true)
+      .order("id")
+      .range(fromIdx, fromIdx + 999);
+    for (const b of blocked ?? []) suppressedSet.add(b.id);
+    if (!blocked || blocked.length < 1000) break;
+  }
+  for (let fromIdx = 0; ; fromIdx += 1000) {
+    const { data: revoked } = await admin
+      .from("current_customer_consents")
+      .select("customer_id")
+      .eq("channel", "whatsapp_marketing")
+      .eq("status", "revoked")
+      .range(fromIdx, fromIdx + 999);
+    for (const r of revoked ?? []) suppressedSet.add(r.customer_id);
+    if (!revoked || revoked.length < 1000) break;
+  }
 
   // ----- Materialize recipients (unique per campaign+customer) -----
   const rows = customerIds.map((cid) => ({
