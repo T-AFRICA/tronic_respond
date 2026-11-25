@@ -129,25 +129,25 @@ export default async function ReportsPage() {
       {/* Headline metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white border border-neutral-border rounded-lg px-4 py-3">
-          <p className="text-xs text-charcoal-light uppercase">Avg response time</p>
+          <p className="text-[12.5px] text-[var(--ink-muted)]">Avg response time</p>
           <p className="text-2xl font-bold mt-1">
             {avgResponse !== null ? fmtHours(avgResponse) : "—"}
           </p>
           <p className="text-[11px] text-charcoal-light">RFQ submitted → quotation sent</p>
         </div>
         <div className="bg-white border border-neutral-border rounded-lg px-4 py-3">
-          <p className="text-xs text-charcoal-light uppercase">Median response time</p>
+          <p className="text-[12.5px] text-[var(--ink-muted)]">Median response time</p>
           <p className="text-2xl font-bold mt-1">
             {medianResponse !== null ? fmtHours(medianResponse) : "—"}
           </p>
           <p className="text-[11px] text-charcoal-light">{responseTimes.length} measured</p>
         </div>
         <div className="bg-white border border-neutral-border rounded-lg px-4 py-3">
-          <p className="text-xs text-charcoal-light uppercase">Quotations sent</p>
+          <p className="text-[12.5px] text-[var(--ink-muted)]">Quotations sent</p>
           <p className="text-2xl font-bold mt-1">{sentCount}</p>
         </div>
         <div className="bg-white border border-neutral-border rounded-lg px-4 py-3">
-          <p className="text-xs text-charcoal-light uppercase">Conversion rate</p>
+          <p className="text-[12.5px] text-[var(--ink-muted)]">Conversion rate</p>
           <p className="text-2xl font-bold mt-1 text-tronic-red">
             {sentCount > 0 ? `${Math.round((acceptedCount / sentCount) * 100)}%` : "—"}
           </p>
@@ -157,7 +157,7 @@ export default async function ReportsPage() {
 
       {/* Staff performance */}
       <section>
-        <h2 className="text-sm font-semibold text-charcoal-light uppercase tracking-wide mb-2">
+        <h2 className="text-[15px] font-bold mb-2.5">
           Staff performance
         </h2>
         <div className="border border-neutral-border rounded-lg overflow-hidden">
@@ -202,7 +202,7 @@ export default async function ReportsPage() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Most requested products */}
         <section>
-          <h2 className="text-sm font-semibold text-charcoal-light uppercase tracking-wide mb-2">
+          <h2 className="text-[15px] font-bold mb-2.5">
             Most requested products
           </h2>
           <div className="border border-neutral-border rounded-lg overflow-hidden">
@@ -238,7 +238,7 @@ export default async function ReportsPage() {
 
         {/* Campaign analytics */}
         <section>
-          <h2 className="text-sm font-semibold text-charcoal-light uppercase tracking-wide mb-2">
+          <h2 className="text-[15px] font-bold mb-2.5">
             Campaigns
           </h2>
           <div className="border border-neutral-border rounded-lg overflow-hidden">

@@ -123,7 +123,7 @@ if (profileError) {
 // ---- sanity: pilot products present? ----
 const { count } = await admin
   .from("pilot_products")
-  .select("id", { count: "exact", head: true });
+  .select("*", { count: "exact", head: true });
 
 console.log("");
 console.log("================= SUPER ADMIN READY =================");

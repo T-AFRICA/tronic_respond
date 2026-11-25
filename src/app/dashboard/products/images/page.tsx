@@ -73,8 +73,8 @@ export default async function ProductImagesPage({
           ["Missing image", Math.max(0, total - withImages)],
         ].map(([label, value]) => (
           <div key={String(label)} className="bg-white border border-neutral-border rounded-lg p-4">
-            <p className="text-xs text-charcoal-light">{label}</p>
-            <p className="display text-2xl font-black mt-1">{Number(value).toLocaleString()}</p>
+            <p className="text-[24px] font-bold leading-none tracking-tight">{Number(value).toLocaleString()}</p>
+            <p className="text-[12.5px] text-[var(--ink-muted)] mt-1.5">{label}</p>
           </div>
         ))}
       </div>

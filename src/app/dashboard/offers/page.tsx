@@ -2,7 +2,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { BadgePercent } from "lucide-react";
 import Link from "next/link";
 import { requirePermission, hasPermission } from "@/lib/auth/session";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  createSupabaseAdminClient,
+} from "@/lib/supabase/server";
 import { importPilotOffer, runOfferSweep } from "./actions";
 
 export const metadata = { title: "Offers" };
@@ -37,9 +40,12 @@ export default async function OffersPage({
     supabase
       .from("active_offer_products")
       .select("product_id", { count: "exact", head: true }),
-    supabase
+    // Service-role count: pilot_products is reference data read through the
+    // admin client (session RLS occasionally misses the schema-cache refresh).
+    // Count via '*': the live pilot_products table has no 'id' column.
+    createSupabaseAdminClient()
       .from("pilot_products")
-      .select("id", { count: "exact", head: true }),
+      .select("*", { count: "exact", head: true }),
   ]);
 
   const canWrite = hasPermission(profile, "offers.write");
@@ -96,8 +102,10 @@ export default async function OffersPage({
           ["Pilot products", pilotRes.count ?? 0],
         ].map(([label, value]) => (
           <div key={String(label)} className="bg-white border border-neutral-border rounded-lg p-4">
-            <p className="text-xs text-charcoal-light">{label}</p>
-            <p className="display text-2xl font-black mt-1">{Number(value).toLocaleString()}</p>
+            <p className="text-[24px] font-bold leading-none tracking-tight">
+              {Number(value).toLocaleString()}
+            </p>
+            <p className="text-[12.5px] text-[var(--ink-muted)] mt-1.5">{label}</p>
           </div>
         ))}
       </div>
@@ -137,7 +145,7 @@ export default async function OffersPage({
                   <td>{count}</td>
                   <td className="text-xs text-charcoal-light">
                     {o.starts_at ? new Date(o.starts_at).toLocaleDateString() : "—"} →{" "}
-                    {o.ends_at ? new Date(o.ends_at).toLocaleDateString() : "no end"}
+                    {o.ends_at ? new Date(o.ends_at).toLocaleDateString() : "open-ended"}
                   </td>
                   <td>
                     <span
