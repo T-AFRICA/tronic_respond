@@ -124,7 +124,7 @@ textarea:focus {
   width: 6px;
 }
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Mobile: any container directly holding a data table scrolls horizontally

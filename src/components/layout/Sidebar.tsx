@@ -160,9 +160,8 @@ export function Sidebar({
         </Link>
       </div>
 
-      {/* Navigation (white panel on the red frame) */}
-      <div className={clsx("flex-1 min-h-0", isCollapsed ? "px-2 py-3" : "px-3 py-3")}>
-      <nav className="h-full overflow-y-auto py-2 sidebar-scroll bg-white rounded-xl border border-[#141414]/80 shadow-sm">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-3 sidebar-scroll">
         {NAV.map(({ section, items }) => {
           const visible = items.filter(
             (i) => i.permission === null || permissions.includes(i.permission),
@@ -172,9 +171,9 @@ export function Sidebar({
             <div key={section || "root"} className="mb-2">
               {section &&
                 (isCollapsed ? (
-                  <div className="mx-3 my-2 border-t border-neutral-border" />
+                  <div className="mx-4 my-2 border-t border-white/25" />
                 ) : (
-                  <p className="px-5 pt-3 pb-1.5 text-[10px] uppercase tracking-[0.14em] text-charcoal-light/70 font-semibold">
+                  <p className="px-5 pt-3 pb-1.5 text-[10px] uppercase tracking-[0.14em] text-white/70 font-semibold">
                     {section}
                   </p>
                 ))}
@@ -191,14 +190,14 @@ export function Sidebar({
                       "group relative flex items-center gap-3 text-[13.5px] transition-colors",
                       isCollapsed ? "justify-center px-0 py-2.5 mx-2 rounded-lg" : "px-4 py-[7px] mx-2 rounded-lg",
                       active
-                        ? "bg-tronic-red text-white font-semibold shadow-sm"
-                        : "text-charcoal-light hover:text-charcoal hover:bg-neutral-bg",
+                        ? "bg-white text-tronic-red font-semibold shadow-sm"
+                        : "text-white/90 hover:text-white hover:bg-white/15",
                     )}
                   >
                     <Icon
                       size={17}
                       strokeWidth={active ? 2.2 : 1.8}
-                      className={clsx("shrink-0", active ? "text-white" : "text-charcoal-light/70 group-hover:text-charcoal")}
+                      className={clsx("shrink-0", active ? "text-tronic-red" : "text-white/90 group-hover:text-white")}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
                   </Link>
@@ -208,7 +207,6 @@ export function Sidebar({
           );
         })}
       </nav>
-      </div>
 
       {/* Collapse toggle */}
       <button
