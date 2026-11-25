@@ -130,7 +130,7 @@ export function Sidebar({
           href="/dashboard"
           className={clsx(
             "flex items-center",
-            isCollapsed ? "justify-center h-14" : "px-4 h-16 gap-2.5",
+            isCollapsed ? "justify-center h-14" : "px-5 h-[84px] gap-2.5",
           )}
         >
           {isCollapsed ? (
@@ -141,9 +141,9 @@ export function Sidebar({
               <img
                 src="/brand/tronic-logo.webp"
                 alt="TRONIC"
-                className="h-7 w-auto brightness-0 invert"
+                className="h-9 w-auto brightness-0 invert"
               />
-              <span className="block text-[10.5px] tracking-[0.3em] uppercase text-white/85 mt-1 font-medium">
+              <span className="block text-[11px] tracking-[0.32em] uppercase text-white/85 mt-1.5 font-medium">
                 Response
               </span>
             </span>
@@ -178,8 +178,8 @@ export function Sidebar({
                     onClick={onNavigate}
                     title={isCollapsed ? item.label : undefined}
                     className={clsx(
-                      "group flex items-center gap-2.5 text-[13px] mx-2 mb-px rounded-[7px] border",
-                      isCollapsed ? "justify-center px-0 py-2" : "px-2.5 py-[5.5px]",
+                      "group flex items-center gap-2.5 text-[13.5px] mx-2 mb-px rounded-[7px] border",
+                      isCollapsed ? "justify-center px-0 py-2" : "px-3 py-[6.5px]",
                       active
                         ? "bg-white/[0.09] text-white font-semibold border-transparent relative"
                         : "text-white/80 border-transparent hover:text-white hover:bg-white/[0.05]",
