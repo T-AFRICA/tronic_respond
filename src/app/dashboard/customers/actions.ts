@@ -10,12 +10,22 @@ import {
 import { listContacts, RespondIoError } from "@/integrations/respondio/client";
 import { respondIoConfig } from "@/lib/config";
 
+const PAGES_PER_RUN = 40; // 40 × 100 contacts per run (serverless time budget)
+const CHUNK = 500;
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size),
+  );
+}
+
 /**
  * Pulls contacts from Respond.io and upserts them into public.customers.
- * - Match order: respondio_contact_id → whatsapp_phone (backfills the id).
- * - Never deletes; existing names are only filled when empty locally
- *   (staff edits win over sync).
- * - Caps at 20 pages × 100 contacts per run; re-run to continue.
+ * BULK implementation (a per-contact version timed out on serverless):
+ *  1. fetch up to PAGES_PER_RUN × 100 contacts,
+ *  2. dedupe by phone, load existing rows in chunks,
+ *  3. merged upserts — staff edits win, never deletes.
+ * Safe to repeat; reruns update the same contacts quickly.
  */
 export async function syncCustomersFromRespondio() {
   await requirePermission("customers.write");
@@ -32,89 +42,131 @@ export async function syncCustomersFromRespondio() {
     .limit(1)
     .single();
 
-  let cursor: string | undefined;
   let created = 0;
   let updated = 0;
   let skipped = 0;
 
   try {
-    for (let page = 0; page < 20; page++) {
+    // ---- 1. Fetch contacts ----
+    type Incoming = {
+      contactId: string;
+      phone: string;
+      name: string;
+      email: string | null;
+      tags: string[];
+    };
+    const incoming: Incoming[] = [];
+    const seenPhones = new Set<string>();
+    let cursor: string | undefined;
+
+    for (let page = 0; page < PAGES_PER_RUN; page++) {
       const res = await listContacts(cursor);
       const contacts = res.items ?? [];
       if (contacts.length === 0) break;
 
       for (const contact of contacts) {
-        const contactId = String(contact.id);
-        const phone = contact.phone?.trim() || null;
-        const name = [contact.firstName, contact.lastName]
-          .filter(Boolean)
-          .join(" ")
-          .trim();
-
-        if (!phone && !contactId) {
-          skipped++;
-          continue;
-        }
-
-        const { data: byId } = await admin
-          .from("customers")
-          .select("id, full_name, email")
-          .eq("respondio_contact_id", contactId)
-          .maybeSingle();
-
-        if (byId) {
-          await admin
-            .from("customers")
-            .update({
-              full_name: byId.full_name || name,
-              email: byId.email || contact.email || null,
-              tags: contact.tags ?? undefined,
-            })
-            .eq("id", byId.id);
-          updated++;
-          continue;
-        }
-
-        if (phone) {
-          const { data: byPhone } = await admin
-            .from("customers")
-            .select("id, full_name, email")
-            .eq("whatsapp_phone", phone)
-            .maybeSingle();
-          if (byPhone) {
-            await admin
-              .from("customers")
-              .update({
-                respondio_contact_id: contactId,
-                full_name: byPhone.full_name || name,
-                email: byPhone.email || contact.email || null,
-                tags: contact.tags ?? undefined,
-              })
-              .eq("id", byPhone.id);
-            updated++;
-            continue;
-          }
-        }
-
+        const phone = contact.phone?.trim() ?? "";
         if (!phone) {
           skipped++; // cannot create a customer without a WhatsApp number
           continue;
         }
-
-        const { error } = await admin.from("customers").insert({
-          respondio_contact_id: contactId,
-          whatsapp_phone: phone,
-          full_name: name,
+        if (seenPhones.has(phone)) continue;
+        seenPhones.add(phone);
+        incoming.push({
+          contactId: String(contact.id),
+          phone,
+          name: [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim(),
           email: contact.email ?? null,
-          tags: contact.tags ?? [],
-          country_id: country!.id,
+          tags: Array.isArray(contact.tags)
+            ? contact.tags
+                .map((t) => (typeof t === "string" ? t : (t as { name?: string })?.name))
+                .filter((t): t is string => Boolean(t))
+            : [],
         });
-        if (error) skipped++;
-        else created++;
       }
 
       cursor = res.pagination?.next;
       if (!cursor) break;
+    }
+
+    // ---- 2. Load existing rows for merge ----
+    type Existing = {
+      id: string;
+      respondio_contact_id: string | null;
+      whatsapp_phone: string;
+      full_name: string;
+      company_name: string;
+      email: string | null;
+      tags: string[];
+      country_id: number;
+      is_blocked: boolean;
+    };
+    const SELECT =
+      "id, respondio_contact_id, whatsapp_phone, full_name, company_name, email, tags, country_id, is_blocked";
+    const byContact = new Map<string, Existing>();
+    const byPhone = new Map<string, Existing>();
+
+    for (const ids of chunk(incoming.map((r) => r.contactId), CHUNK)) {
+      const { data } = await admin
+        .from("customers")
+        .select(SELECT)
+        .in("respondio_contact_id", ids);
+      for (const c of (data ?? []) as Existing[]) {
+        if (c.respondio_contact_id) byContact.set(c.respondio_contact_id, c);
+      }
+    }
+    for (const phones of chunk(incoming.map((r) => r.phone), CHUNK)) {
+      const { data } = await admin
+        .from("customers")
+        .select(SELECT)
+        .in("whatsapp_phone", phones);
+      for (const c of (data ?? []) as Existing[]) byPhone.set(c.whatsapp_phone, c);
+    }
+
+    // ---- 3. Merge (staff edits win) ----
+    const updates: Record<string, unknown>[] = [];
+    const inserts: Record<string, unknown>[] = [];
+    for (const r of incoming) {
+      const existing = byContact.get(r.contactId) ?? byPhone.get(r.phone);
+      if (existing) {
+        updates.push({
+          id: existing.id,
+          respondio_contact_id: existing.respondio_contact_id ?? r.contactId,
+          whatsapp_phone: existing.whatsapp_phone,
+          full_name: existing.full_name || r.name,
+          company_name: existing.company_name,
+          email: existing.email || r.email,
+          tags: r.tags.length > 0 ? r.tags : existing.tags,
+          country_id: existing.country_id,
+          is_blocked: existing.is_blocked,
+        });
+      } else {
+        inserts.push({
+          respondio_contact_id: r.contactId,
+          whatsapp_phone: r.phone,
+          full_name: r.name,
+          email: r.email,
+          tags: r.tags,
+          country_id: country!.id,
+        });
+      }
+    }
+
+    // ---- 4. Bulk write ----
+    for (const batch of chunk(updates, CHUNK)) {
+      const { error } = await admin
+        .from("customers")
+        .upsert(batch, { onConflict: "id" });
+      if (error) throw new Error(`update batch failed: ${error.message}`);
+      updated += batch.length;
+    }
+    for (const batch of chunk(inserts, CHUNK)) {
+      const { data, error } = await admin
+        .from("customers")
+        .upsert(batch, { onConflict: "whatsapp_phone", ignoreDuplicates: true })
+        .select("id");
+      if (error) throw new Error(`insert batch failed: ${error.message}`);
+      created += data?.length ?? 0;
     }
   } catch (e) {
     // Surface the provider's actual failure (status + short message, no secrets)

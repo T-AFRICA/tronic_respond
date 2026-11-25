@@ -7,6 +7,8 @@ import { syncCustomersFromRespondio } from "./actions";
 
 export const metadata = { title: "Customers" };
 export const dynamic = "force-dynamic";
+// Respond.io sync walks up to 40 contact pages — allow a longer serverless budget.
+export const maxDuration = 60;
 
 export default async function CustomersPage({
   searchParams,
