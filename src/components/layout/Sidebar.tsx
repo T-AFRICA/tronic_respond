@@ -127,30 +127,30 @@ export function Sidebar({
       {/* Brand */}
       <div
         className={clsx(
-          "border-b border-white/20 flex items-center",
-          isCollapsed ? "px-0 py-4 justify-center" : "px-5 py-4",
+          "border-b border-white/20",
+          isCollapsed ? "px-0 py-4 flex justify-center" : "px-4 py-4",
         )}
       >
-        <Link href="/dashboard" className="min-w-0 block">
+        <Link href="/dashboard" className="block min-w-0">
           {isCollapsed ? (
             <span className="w-9 h-9 shrink-0 rounded-lg bg-white flex items-center justify-center display font-black text-tronic-red text-lg">
               T
             </span>
           ) : (
-            <span className="block min-w-0">
-              <span className="inline-flex items-baseline gap-1.5 bg-white rounded-md px-2.5 py-1.5">
+            <span className="block">
+              <span className="flex items-center justify-center bg-white rounded-xl px-4 py-3 shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/brand/tronic-logo.webp"
                   alt="TRONIC"
-                  className="h-[18px] w-auto"
+                  className="h-8 w-auto"
                 />
               </span>
-              <span className="block mt-1.5 leading-tight">
-                <span className="text-[13px] font-light text-white/90 tracking-wide">
+              <span className="block mt-2.5 text-center leading-tight">
+                <span className="text-[13px] font-semibold tracking-[0.35em] uppercase text-white">
                   Response
                 </span>
-                <span className="block text-[10px] text-white/70">
+                <span className="block text-[10px] text-white/70 mt-0.5">
                   Faster Responses. Smarter Sales.
                 </span>
               </span>
