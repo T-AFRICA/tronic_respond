@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "worker": "tsx src/workers/index.ts"
+    "worker": "tsx --env-file-if-exists=.env.local src/workers/index.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
