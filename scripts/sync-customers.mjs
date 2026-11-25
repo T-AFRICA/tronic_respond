@@ -62,6 +62,7 @@ for (const c of contacts) {
     phone,
     name: [c.firstName, c.lastName].filter(Boolean).join(" ").trim(),
     email: c.email ?? null,
+    createdAt: c.created_at ? new Date(c.created_at * 1000).toISOString() : null,
     tags: Array.isArray(c.tags) ? c.tags.map((t) => (typeof t === "string" ? t : t?.name)).filter(Boolean) : [],
   });
 }
@@ -75,14 +76,14 @@ const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) =
 for (const ids of chunk(rows.map((r) => r.contactId), 500)) {
   const { data } = await admin
     .from("customers")
-    .select("id, respondio_contact_id, whatsapp_phone, full_name, email, tags, company_name, country_id, is_blocked")
+    .select("id, respondio_contact_id, whatsapp_phone, full_name, email, tags, company_name, country_id, is_blocked, last_contact_at")
     .in("respondio_contact_id", ids);
   for (const c of data ?? []) existingByContact.set(c.respondio_contact_id, c);
 }
 for (const phones of chunk(rows.map((r) => r.phone), 500)) {
   const { data } = await admin
     .from("customers")
-    .select("id, respondio_contact_id, whatsapp_phone, full_name, email, tags, company_name, country_id, is_blocked")
+    .select("id, respondio_contact_id, whatsapp_phone, full_name, email, tags, company_name, country_id, is_blocked, last_contact_at")
     .in("whatsapp_phone", phones);
   for (const c of data ?? []) existingByPhone.set(c.whatsapp_phone, c);
 }
@@ -103,6 +104,7 @@ for (const r of rows) {
       tags: r.tags.length > 0 ? r.tags : existing.tags,
       country_id: existing.country_id,
       is_blocked: existing.is_blocked,
+      last_contact_at: existing.last_contact_at ?? r.createdAt,
     });
   } else {
     inserts.push({
@@ -112,6 +114,7 @@ for (const r of rows) {
       email: r.email,
       tags: r.tags,
       country_id: country.id,
+      last_contact_at: r.createdAt,
     });
   }
 }

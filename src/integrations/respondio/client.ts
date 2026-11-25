@@ -78,6 +78,8 @@ export type RespondIoContact = {
   countryCode: string | null;
   tags?: string[];
   assignee?: { id: number } | null;
+  /** Unix seconds — when the contact was created in Respond.io. */
+  created_at?: number;
 };
 
 // ---------- Contacts (verified: standard Developer API) ----------

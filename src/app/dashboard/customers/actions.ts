@@ -54,6 +54,7 @@ export async function syncCustomersFromRespondio() {
       name: string;
       email: string | null;
       tags: string[];
+      createdAt: string | null;
     };
     const incoming: Incoming[] = [];
     const seenPhones = new Set<string>();
@@ -77,6 +78,9 @@ export async function syncCustomersFromRespondio() {
           phone,
           name: [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim(),
           email: contact.email ?? null,
+          createdAt: contact.created_at
+            ? new Date(contact.created_at * 1000).toISOString()
+            : null,
           tags: Array.isArray(contact.tags)
             ? contact.tags
                 .map((t) => (typeof t === "string" ? t : (t as { name?: string })?.name))
@@ -100,9 +104,10 @@ export async function syncCustomersFromRespondio() {
       tags: string[];
       country_id: number;
       is_blocked: boolean;
+      last_contact_at: string | null;
     };
     const SELECT =
-      "id, respondio_contact_id, whatsapp_phone, full_name, company_name, email, tags, country_id, is_blocked";
+      "id, respondio_contact_id, whatsapp_phone, full_name, company_name, email, tags, country_id, is_blocked, last_contact_at";
     const byContact = new Map<string, Existing>();
     const byPhone = new Map<string, Existing>();
 
@@ -139,6 +144,7 @@ export async function syncCustomersFromRespondio() {
           tags: r.tags.length > 0 ? r.tags : existing.tags,
           country_id: existing.country_id,
           is_blocked: existing.is_blocked,
+          last_contact_at: existing.last_contact_at ?? r.createdAt,
         });
       } else {
         inserts.push({
@@ -148,6 +154,7 @@ export async function syncCustomersFromRespondio() {
           email: r.email,
           tags: r.tags,
           country_id: country!.id,
+          last_contact_at: r.createdAt,
         });
       }
     }
