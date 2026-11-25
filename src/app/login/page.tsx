@@ -21,14 +21,12 @@ export default async function LoginPage({
               "radial-gradient(circle at 20% 20%, #d6001c 0, transparent 40%), radial-gradient(circle at 80% 90%, #d6001c 0, transparent 45%)",
           }}
         />
-        <div className="relative flex items-center gap-2.5">
-          <span className="w-10 h-10 rounded-lg bg-tronic-red flex items-center justify-center display font-black text-xl shadow-[0_2px_12px_rgba(214,0,28,0.5)]">
-            T
+        <div className="relative flex items-center gap-3">
+          <span className="bg-white rounded-lg px-3 py-2 inline-flex items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/tronic-logo.webp" alt="TRONIC" className="h-6 w-auto" />
           </span>
-          <span>
-            <span className="display font-black text-lg">TRONIC</span>
-            <span className="font-light text-lg"> Response</span>
-          </span>
+          <span className="font-light text-lg text-white/90">Response</span>
         </div>
 
         <div className="relative max-w-sm">
@@ -52,9 +50,14 @@ export default async function LoginPage({
       <section className="flex-1 flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-sm">
           <div className="mb-8 text-center lg:hidden">
-            <div className="inline-flex items-baseline gap-1">
-              <span className="display text-3xl font-black text-tronic-red">TRONIC</span>
-              <span className="text-3xl font-light text-charcoal">Response</span>
+            <div className="inline-flex items-baseline gap-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/brand/tronic-logo.webp"
+                alt="TRONIC"
+                className="h-8 w-auto inline-block"
+              />
+              <span className="text-2xl font-light text-charcoal">Response</span>
             </div>
             <p className="mt-2 text-sm text-charcoal-light">
               Faster Responses. Smarter Sales.

@@ -131,18 +131,28 @@ export function Sidebar({
           isCollapsed ? "px-0 py-4 justify-center" : "px-5 py-4",
         )}
       >
-        <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0">
-          <span className="w-9 h-9 shrink-0 rounded-lg bg-tronic-red flex items-center justify-center display font-black text-white text-lg shadow-[0_2px_8px_rgba(214,0,28,0.4)]">
-            T
-          </span>
-          {!isCollapsed && (
-            <span className="min-w-0">
-              <span className="block leading-tight truncate">
-                <span className="display font-black text-white text-[17px]">TRONIC</span>
-                <span className="font-light text-white/90 text-[17px]"> Response</span>
+        <Link href="/dashboard" className="min-w-0 block">
+          {isCollapsed ? (
+            <span className="w-9 h-9 shrink-0 rounded-lg bg-white flex items-center justify-center display font-black text-tronic-red text-lg">
+              T
+            </span>
+          ) : (
+            <span className="block min-w-0">
+              <span className="inline-flex items-baseline gap-1.5 bg-white rounded-md px-2.5 py-1.5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/brand/tronic-logo.webp"
+                  alt="TRONIC"
+                  className="h-[18px] w-auto"
+                />
               </span>
-              <span className="block text-[10px] text-white/40 leading-tight truncate">
-                Faster Responses. Smarter Sales.
+              <span className="block mt-1.5 leading-tight">
+                <span className="text-[13px] font-light text-white/90 tracking-wide">
+                  Response
+                </span>
+                <span className="block text-[10px] text-white/40">
+                  Faster Responses. Smarter Sales.
+                </span>
               </span>
             </span>
           )}

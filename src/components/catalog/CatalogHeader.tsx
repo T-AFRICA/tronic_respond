@@ -34,12 +34,13 @@ export function CatalogHeader({
       <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
         <Link
           href={`/catalog${catalogQuery(lang, token)}`}
-          className="min-w-0"
+          className="min-w-0 flex items-center gap-2"
         >
-          <span className="display font-black text-lg leading-tight block truncate">
-            TRONIC
+          <span className="bg-white rounded-md px-2 py-1.5 inline-flex items-center shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/tronic-logo.webp" alt="TRONIC" className="h-4 w-auto" />
           </span>
-          <span className="text-[10px] text-white/80 leading-tight block truncate">
+          <span className="text-[10px] text-white/80 leading-tight hidden sm:block truncate max-w-36">
             {dict.tagline}
           </span>
         </Link>
