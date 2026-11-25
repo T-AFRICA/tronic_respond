@@ -117,7 +117,7 @@ export function Sidebar({
   return (
     <aside
       className={clsx(
-        "shrink-0 bg-[#1d1d1f] text-white flex flex-col transition-[width,transform] duration-200",
+        "shrink-0 bg-tronic-red text-white flex flex-col transition-[width,transform] duration-200",
         // Desktop: sticky column (collapsible). Mobile: off-canvas drawer.
         "fixed inset-y-0 left-0 z-40 h-dvh w-64 lg:sticky lg:top-0 lg:z-auto lg:h-auto lg:min-h-screen lg:max-h-screen lg:translate-x-0",
         mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full",
@@ -127,7 +127,7 @@ export function Sidebar({
       {/* Brand */}
       <div
         className={clsx(
-          "border-b border-white/10 flex items-center",
+          "border-b border-white/20 flex items-center",
           isCollapsed ? "px-0 py-4 justify-center" : "px-5 py-4",
         )}
       >
@@ -150,7 +150,7 @@ export function Sidebar({
                 <span className="text-[13px] font-light text-white/90 tracking-wide">
                   Response
                 </span>
-                <span className="block text-[10px] text-white/40">
+                <span className="block text-[10px] text-white/70">
                   Faster Responses. Smarter Sales.
                 </span>
               </span>
@@ -170,9 +170,9 @@ export function Sidebar({
             <div key={section || "root"} className="mb-2">
               {section &&
                 (isCollapsed ? (
-                  <div className="mx-4 my-2 border-t border-white/10" />
+                  <div className="mx-4 my-2 border-t border-white/25" />
                 ) : (
-                  <p className="px-5 pt-3 pb-1.5 text-[10px] uppercase tracking-[0.14em] text-white/35 font-semibold">
+                  <p className="px-5 pt-3 pb-1.5 text-[10px] uppercase tracking-[0.14em] text-white/70 font-semibold">
                     {section}
                   </p>
                 ))}
@@ -189,17 +189,14 @@ export function Sidebar({
                       "group relative flex items-center gap-3 text-[13.5px] transition-colors",
                       isCollapsed ? "justify-center px-0 py-2.5 mx-2 rounded-lg" : "px-4 py-[7px] mx-2 rounded-lg",
                       active
-                        ? "bg-white/[0.08] text-white font-medium"
-                        : "text-white/60 hover:text-white hover:bg-white/[0.05]",
+                        ? "bg-white text-tronic-red font-semibold shadow-sm"
+                        : "text-white/85 hover:text-white hover:bg-white/15",
                     )}
                   >
-                    {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full bg-tronic-red" />
-                    )}
                     <Icon
                       size={17}
                       strokeWidth={active ? 2.2 : 1.8}
-                      className={clsx("shrink-0", active ? "text-tronic-red" : "text-white/50 group-hover:text-white/80")}
+                      className={clsx("shrink-0", active ? "text-tronic-red" : "text-white/80 group-hover:text-white")}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
                   </Link>
@@ -214,7 +211,7 @@ export function Sidebar({
       <button
         onClick={toggle}
         className={clsx(
-          "border-t border-white/10 hidden lg:flex items-center gap-2 text-white/40 hover:text-white/80 text-xs transition-colors py-3",
+          "border-t border-white/20 hidden lg:flex items-center gap-2 text-white/70 hover:text-white text-xs transition-colors py-3",
           isCollapsed ? "justify-center" : "px-5",
         )}
         title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
