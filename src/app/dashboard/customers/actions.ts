@@ -7,7 +7,7 @@ import {
   createSupabaseServerClient,
   createSupabaseAdminClient,
 } from "@/lib/supabase/server";
-import { listContacts } from "@/integrations/respondio/client";
+import { listContacts, RespondIoError } from "@/integrations/respondio/client";
 import { respondIoConfig } from "@/lib/config";
 
 /**
@@ -116,9 +116,19 @@ export async function syncCustomersFromRespondio() {
       cursor = res.pagination?.next;
       if (!cursor) break;
     }
-  } catch {
+  } catch (e) {
+    // Surface the provider's actual failure (status + short message, no secrets)
+    let detail = "unknown error";
+    if (e instanceof RespondIoError) {
+      const body =
+        typeof e.body === "string" ? e.body : JSON.stringify(e.body ?? "");
+      detail = `HTTP ${e.status}: ${body.slice(0, 180)}`;
+    } else if (e instanceof Error) {
+      detail = e.message.slice(0, 180);
+    }
+    console.error("customer sync failed:", detail);
     redirect(
-      `/dashboard/customers?error=syncfailed&created=${created}&updated=${updated}`,
+      `/dashboard/customers?error=syncfailed&created=${created}&updated=${updated}&detail=${encodeURIComponent(detail)}`,
     );
   }
 

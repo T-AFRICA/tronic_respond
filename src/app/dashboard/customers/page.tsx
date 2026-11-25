@@ -18,6 +18,7 @@ export default async function CustomersPage({
     created?: string;
     updated?: string;
     skipped?: string;
+    detail?: string;
   }>;
 }) {
   const profile = await requirePermission("customers.read");
@@ -73,11 +74,17 @@ export default async function CustomersPage({
         </p>
       )}
       {sp.error === "syncfailed" && (
-        <p className="text-sm text-tronic-red bg-tronic-red-soft border border-tronic-red/20 rounded px-3 py-2">
-          Sync stopped early ({sp.created ?? 0} created, {sp.updated ?? 0}{" "}
-          updated before the error). Check Integrations and run it again — the
-          sync is safe to repeat.
-        </p>
+        <div className="text-sm text-tronic-red bg-tronic-red-soft border border-tronic-red/20 rounded px-3 py-2">
+          <p>
+            Sync stopped early ({sp.created ?? 0} created, {sp.updated ?? 0}{" "}
+            updated before the error). The sync is safe to repeat.
+          </p>
+          {sp.detail && (
+            <p className="mt-1 font-mono text-xs break-all">
+              Provider response: {sp.detail}
+            </p>
+          )}
+        </div>
       )}
 
       <form action="/dashboard/customers" className="flex gap-2">
