@@ -11,6 +11,21 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // Fail with a precise message instead of a generic 500 when the deployment
+  // is missing its Supabase configuration.
+  const missing = [
+    !process.env.NEXT_PUBLIC_SUPABASE_URL && "NEXT_PUBLIC_SUPABASE_URL",
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  ].filter(Boolean);
+  if (missing.length > 0) {
+    return new NextResponse(
+      `TRONIC Response is not configured: missing environment variable(s) ${missing.join(
+        ", ",
+      )}. Add them in the hosting provider's project settings and redeploy.`,
+      { status: 503, headers: { "content-type": "text/plain" } },
+    );
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -34,9 +49,18 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // A transient Supabase outage must not take down public pages: treat
+  // failures as "signed out" (protected routes then redirect to /login).
+  let user: unknown = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (e) {
+    console.error(
+      "middleware: supabase.auth.getUser failed:",
+      e instanceof Error ? e.message : e,
+    );
+  }
 
   const { pathname } = request.nextUrl;
   const isProtected = pathname.startsWith("/dashboard");
