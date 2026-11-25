@@ -66,7 +66,7 @@ function KpiCard({
         <span className="block text-[24px] font-semibold leading-none tracking-tight">
           {typeof value === "number" ? value.toLocaleString() : value}
         </span>
-        <span className="block text-[11px] uppercase tracking-[0.07em] text-charcoal-light mt-1.5 leading-tight">
+        <span className="block text-[12px] text-[var(--ink-muted)] mt-1.5 leading-snug">
           {label}
         </span>
         {hint && (
@@ -80,16 +80,10 @@ function KpiCard({
 
 function HealthChip({ ok, label, warn }: { ok: boolean; label: string; warn?: boolean }) {
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 text-xs border rounded-full px-3 py-1.5 ${
-        ok
-          ? "bg-green-50 text-green-700 border-green-200"
-          : warn
-            ? "bg-amber-50 text-amber-700 border-amber-200"
-            : "bg-neutral-bg text-charcoal-light border-neutral-border"
-      }`}
-    >
-      {ok ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
+    <span className="inline-flex items-center gap-1.5 text-xs bg-white border border-[var(--hairline)] text-[var(--ink-muted)] rounded-full px-2.5 py-1">
+      <span
+        className={`w-1.5 h-1.5 rounded-full ${ok ? "bg-green-500" : warn ? "bg-amber-500" : "bg-neutral-border"}`}
+      />
       {label}
     </span>
   );
@@ -222,8 +216,8 @@ export default async function OverviewPage() {
 
       {/* Catalog & customers */}
       <section>
-        <h2 className="text-[11px] font-semibold text-charcoal-light uppercase tracking-[0.1em] mb-2.5">
-          Catalog & Customers
+        <h2 className="text-[12px] font-semibold text-[var(--ink-muted)] mb-2.5">
+          Catalog & customers
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <KpiCard
@@ -260,10 +254,10 @@ export default async function OverviewPage() {
 
       {/* Sales pipeline */}
       <section>
-        <h2 className="text-[11px] font-semibold text-charcoal-light uppercase tracking-[0.1em] mb-2.5">
-          Sales Pipeline
+        <h2 className="text-[12px] font-semibold text-[var(--ink-muted)] mb-2.5">
+          Sales pipeline
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
           <KpiCard
             label="New requests"
             value={newRfqs}
@@ -305,7 +299,7 @@ export default async function OverviewPage() {
       {/* Marketing + recent requests */}
       <div className="grid md:grid-cols-3 gap-4">
         <section>
-          <h2 className="text-[11px] font-semibold text-charcoal-light uppercase tracking-[0.1em] mb-2.5">
+          <h2 className="text-[12px] font-semibold text-[var(--ink-muted)] mb-2.5">
             Marketing
           </h2>
           <KpiCard
@@ -318,8 +312,8 @@ export default async function OverviewPage() {
 
         <section className="md:col-span-2">
           <div className="flex items-center justify-between mb-2.5">
-            <h2 className="text-[11px] font-semibold text-charcoal-light uppercase tracking-[0.1em]">
-              Latest Quotation Requests
+            <h2 className="text-[12px] font-semibold text-[var(--ink-muted)]">
+              Latest quotation requests
             </h2>
             <Link
               href="/dashboard/rfqs"
