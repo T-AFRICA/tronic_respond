@@ -198,6 +198,11 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
             throw e;
           }
         }
+        if (!contact?.id) {
+          throw new Error(
+            `contact resolution for ${phone} returned no id (${JSON.stringify(contact).slice(0, 200)})`,
+          );
+        }
         const res = await sendTemplateMessage(
           contact.id,
           campaign.template_name,

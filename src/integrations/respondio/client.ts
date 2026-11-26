@@ -142,10 +142,17 @@ export async function createOrUpdateContact(
       }),
     },
   );
-  if (res && typeof (res as { id?: number }).id === "number") {
-    return res as RespondIoContact;
-  }
-  // Some responses return the contact nested or empty — fall back to lookup.
+  // Verified live (2026-11-26): the endpoint returns { contactId: 590202925 },
+  // not a full contact object.
+  const body = res as { id?: number; contactId?: number };
+  const cid =
+    typeof body?.id === "number"
+      ? body.id
+      : typeof body?.contactId === "number"
+        ? body.contactId
+        : null;
+  if (cid) return { ...(res as object), id: cid } as RespondIoContact;
+  // Unknown response shape — fall back to lookup.
   return getContactByPhone(phone);
 }
 
