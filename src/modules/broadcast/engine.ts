@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
-import { isLiveBroadcastingEnabled } from "@/lib/config";
+import { isLiveBroadcastingEnabled, respondIoConfig } from "@/lib/config";
 import {
   getContactByPhone,
   createOrUpdateContact,
@@ -38,6 +38,21 @@ type Job = {
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * tronic_special_offers has an IMAGE header — Meta requires the header
+ * parameter on every send (#132012 otherwise).
+ */
+function templateComponents(): unknown[] {
+  return [
+    {
+      type: "header",
+      parameters: [
+        { type: "image", image: { link: respondIoConfig.templateHeaderImageUrl() } },
+      ],
+    },
+  ];
+}
 
 async function failJob(admin: SupabaseClient, jobId: string, error: string) {
   await admin
@@ -187,6 +202,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
           contact.id,
           campaign.template_name,
           "en",
+          templateComponents(),
         );
         sent++;
         await admin.from("message_logs").insert({
@@ -321,6 +337,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
           contactRef,
           campaign.template_name,
           "en",
+          templateComponents(),
         );
         sent++;
         await admin
