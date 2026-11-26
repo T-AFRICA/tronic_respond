@@ -23,8 +23,11 @@ export const respondIoConfig = {
   baseUrl: () =>
     env("RESPOND_IO_API_URL", "RESPONDIO_API_BASE_URL") ??
     "https://api.respond.io/v2",
-  /** WhatsApp channel ID in Respond.io (e.g. 582135). */
-  channelId: () => env("RESPOND_IO_CHANNEL_ID", "RESPONDIO_CHANNEL_ID"),
+  /** WhatsApp channel ID in Respond.io. Without an explicit channelId the
+   *  provider falls back to the contact's "last interacted channel", which
+   *  fails for new contacts — so the pinned WhatsApp channel is the default. */
+  channelId: () =>
+    env("RESPOND_IO_CHANNEL_ID", "RESPONDIO_CHANNEL_ID") ?? "582135",
   /** Default approved marketing template name. */
   templateName: () =>
     env("RESPOND_IO_TEMPLATE_NAME", "RESPONDIO_TEMPLATE_NAME") ??
