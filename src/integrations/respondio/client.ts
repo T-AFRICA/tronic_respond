@@ -112,6 +112,33 @@ export async function getContactByPhone(phone: string) {
   return request<RespondIoContact>(`/contact/phone:${encodeURIComponent(phone)}`);
 }
 
+/**
+ * Create the contact if it doesn't exist, update it if it does.
+ * Used by internal test sends so an allowlisted staff number that has never
+ * messaged the business can still receive the approved template.
+ */
+export async function createOrUpdateContact(
+  phone: string,
+  fields: { firstName?: string; lastName?: string } = {},
+) {
+  const res = await request<RespondIoContact | { id: number }>(
+    `/contact/create_or_update/phone:${encodeURIComponent(phone)}`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        firstName: fields.firstName ?? "Internal",
+        lastName: fields.lastName ?? "Test",
+        phone,
+      }),
+    },
+  );
+  if (res && typeof (res as { id?: number }).id === "number") {
+    return res as RespondIoContact;
+  }
+  // Some responses return the contact nested or empty — fall back to lookup.
+  return getContactByPhone(phone);
+}
+
 export async function listContacts(cursor?: string, limit = 100) {
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set("cursorId", cursor);

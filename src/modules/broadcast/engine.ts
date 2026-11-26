@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { isLiveBroadcastingEnabled } from "@/lib/config";
 import {
   getContactByPhone,
+  createOrUpdateContact,
   sendTemplateMessage,
   RespondIoError,
 } from "@/integrations/respondio/client";
@@ -170,7 +171,18 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
 
     for (const phone of numbers) {
       try {
-        const contact = await getContactByPhone(phone);
+        // Allowlisted staff numbers may never have messaged the business —
+        // create the contact on first test send instead of failing on 404.
+        let contact;
+        try {
+          contact = await getContactByPhone(phone);
+        } catch (e) {
+          if (e instanceof RespondIoError && e.status === 404) {
+            contact = await createOrUpdateContact(phone);
+          } else {
+            throw e;
+          }
+        }
         const res = await sendTemplateMessage(
           contact.id,
           campaign.template_name,
