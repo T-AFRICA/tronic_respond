@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Respond.io integration adapter.
  *
  * IMPORTANT — capability verification policy:
@@ -88,6 +88,16 @@ async function request<T>(
   return (await res.json()) as T;
 }
 
+/**
+ * Respond.io addresses contacts by identifier: "id:123", "phone:+255…" or
+ * "email:…". A bare numeric id is rejected ("Identifier … is invalid"), so
+ * normalize numbers / numeric strings to the id: form.
+ */
+function contactIdentifier(contactId: string | number): string {
+  const s = String(contactId);
+  return /^\d+$/.test(s) ? `id:${s}` : s;
+}
+
 export type RespondIoContact = {
   id: number;
   firstName: string | null;
@@ -104,7 +114,7 @@ export type RespondIoContact = {
 // ---------- Contacts (verified: standard Developer API) ----------
 
 export async function getContact(contactId: string | number) {
-  return request<RespondIoContact>(`/contact/${contactId}`);
+  return request<RespondIoContact>(`/contact/${contactIdentifier(contactId)}`);
 }
 
 export async function getContactByPhone(phone: string) {
@@ -168,7 +178,7 @@ export async function addContactTags(
   contactId: string | number,
   tags: string[],
 ) {
-  return request(`/contact/${contactId}/tag`, {
+  return request(`/contact/${contactIdentifier(contactId)}/tag`, {
     method: "POST",
     body: JSON.stringify(tags),
   });
@@ -181,7 +191,7 @@ export async function sendTextMessage(
   contactId: string | number,
   text: string,
 ) {
-  return request<{ messageId: number }>(`/contact/${contactId}/message`, {
+  return request<{ messageId: number }>(`/contact/${contactIdentifier(contactId)}/message`, {
     method: "POST",
     body: JSON.stringify({ message: { type: "text", text } }),
   });
@@ -193,7 +203,7 @@ export async function sendDocumentMessage(
   fileUrl: string,
   _fileName?: string,
 ) {
-  return request<{ messageId: number }>(`/contact/${contactId}/message`, {
+  return request<{ messageId: number }>(`/contact/${contactIdentifier(contactId)}/message`, {
     method: "POST",
     body: JSON.stringify({
       message: { type: "attachment", attachment: { type: "file", url: fileUrl } },
@@ -206,7 +216,7 @@ export async function sendImageMessage(
   contactId: string | number,
   imageUrl: string,
 ) {
-  return request<{ messageId: number }>(`/contact/${contactId}/message`, {
+  return request<{ messageId: number }>(`/contact/${contactIdentifier(contactId)}/message`, {
     method: "POST",
     body: JSON.stringify({
       message: { type: "attachment", attachment: { type: "image", url: imageUrl } },
@@ -227,7 +237,7 @@ export async function sendTemplateMessage(
   channelId?: string | number,
 ) {
   const channel = channelId ?? respondIoConfig.channelId();
-  return request<{ messageId: number }>(`/contact/${contactId}/message`, {
+  return request<{ messageId: number }>(`/contact/${contactIdentifier(contactId)}/message`, {
     method: "POST",
     body: JSON.stringify({
       ...(channel ? { channelId: Number(channel) } : {}),
@@ -260,7 +270,7 @@ export async function assignConversation(
   contactId: string | number,
   assigneeId: number | null,
 ) {
-  return request(`/contact/${contactId}/conversation/assignee`, {
+  return request(`/contact/${contactIdentifier(contactId)}/conversation/assignee`, {
     method: "POST",
     body: JSON.stringify({ assignee: assigneeId }),
   });
