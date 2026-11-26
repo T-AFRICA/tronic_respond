@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isLiveBroadcastingEnabled } from "@/lib/config";
+import { AutoRefresh } from "@/components/ui/AutoRefresh";
 import {
   startCampaignExecution,
   pauseCampaignExecution,
@@ -105,6 +106,8 @@ export async function ExecutionPanel({
 
   return (
     <div className="bg-white border border-neutral-border rounded-lg p-4 space-y-4">
+      {/* Live status: refresh server data while a job is queued/running/paused */}
+      <AutoRefresh active={hasUnfinished} />
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <h2 className="text-xs uppercase tracking-wide text-charcoal-light font-semibold">
           API Execution (Redis / BullMQ worker)
