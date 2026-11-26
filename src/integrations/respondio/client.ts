@@ -35,14 +35,33 @@ async function request<T>(
   const token = respondIoConfig.token();
   if (!token) throw new Error("RESPOND_IO_API_TOKEN is not configured");
 
-  const res = await fetch(`${respondIoConfig.baseUrl()}${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      ...init.headers,
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${respondIoConfig.baseUrl()}${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...init.headers,
+      },
+    });
+  } catch (e) {
+    // Retry ONLY connect-stage network failures (DNS, refused, connect
+    // timeout): the request never reached the server, so a retry cannot
+    // produce a duplicate send. Mid-response failures are NOT retried.
+    const code = (e as { cause?: { code?: string } })?.cause?.code ?? "";
+    const connectStage = [
+      "UND_ERR_CONNECT_TIMEOUT",
+      "ENOTFOUND",
+      "ECONNREFUSED",
+      "EAI_AGAIN",
+    ].includes(code);
+    if (connectStage && retries > 0) {
+      await new Promise((r) => setTimeout(r, (3 - retries) * 3000 + 2000));
+      return request<T>(path, init, retries - 1);
+    }
+    throw e;
+  }
 
   // Provider rate limiting: back off and retry
   if (res.status === 429 && retries > 0) {
