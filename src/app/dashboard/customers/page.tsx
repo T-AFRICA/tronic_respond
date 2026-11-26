@@ -1,4 +1,5 @@
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CustomerSearchBox } from "@/components/search/CustomerSearchBox";
 import { Users } from "lucide-react";
 import Link from "next/link";
 import { requirePermission, hasPermission } from "@/lib/auth/session";
@@ -90,12 +91,11 @@ export default async function CustomersPage({
       )}
 
       <form action="/dashboard/customers" className="flex gap-2">
-        <input
-          type="search"
-          name="q"
+        <CustomerSearchBox
           defaultValue={q ?? ""}
           placeholder="Search name, company, phone…"
-          className="w-72 rounded border border-neutral-border bg-white px-3 py-2 text-sm"
+          className="w-72"
+          inputClassName="w-full rounded border border-neutral-border bg-white pl-8 pr-8 py-2 text-sm"
         />
         <button className="text-sm border border-neutral-border bg-white rounded px-4 py-2 hover:border-charcoal-light">
           Search

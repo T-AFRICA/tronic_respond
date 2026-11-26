@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getLang, t } from "@/lib/catalog/i18n";
 import { CatalogHeader, catalogQuery } from "@/components/catalog/CatalogHeader";
 import { AddToCartButton } from "@/components/catalog/CartWidgets";
+import { ProductSearchBox } from "@/components/search/ProductSearchBox";
 
 export const metadata = { title: "TRONIC Special Offers" };
 export const dynamic = "force-dynamic";
@@ -87,12 +88,13 @@ export default async function OffersCatalogPage({
         <form action="/catalog/offers" className="flex gap-2 flex-wrap">
           {lang === "sw" && <input type="hidden" name="lang" value="sw" />}
           {token && <input type="hidden" name="t" value={token} />}
-          <input
-            type="search"
-            name="q"
+          <ProductSearchBox
+            scope="catalog"
             defaultValue={sp.q ?? ""}
             placeholder={dict.search_placeholder}
-            className="flex-1 min-w-48 rounded border border-neutral-border bg-white px-3 py-2.5 text-sm"
+            className="flex-1 min-w-48"
+            inputClassName="w-full rounded border border-neutral-border bg-white pl-8 pr-8 py-2.5 text-sm"
+            linkParams={{ lang: lang === "sw" ? "sw" : undefined, t: token }}
           />
           <select
             name="category"

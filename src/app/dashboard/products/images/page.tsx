@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ProductSearchBox } from "@/components/search/ProductSearchBox";
 import { requirePermission } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { BulkImageUploader } from "@/components/products/BulkImageUploader";
@@ -96,12 +97,12 @@ export default async function ProductImagesPage({
         </Link>
         <form action="/dashboard/products/images" className="flex gap-2 ml-auto">
           <input type="hidden" name="view" value={view} />
-          <input
-            type="search"
-            name="q"
+          <ProductSearchBox
+            scope="admin"
             defaultValue={sp.q ?? ""}
             placeholder="Search SKU or name…"
-            className="rounded border border-neutral-border bg-white px-3 py-1.5 text-sm"
+            className="w-64"
+            inputClassName="w-full rounded border border-neutral-border bg-white pl-8 pr-8 py-1.5 text-sm"
           />
           <button className="text-sm bg-charcoal text-white rounded px-3 py-1.5">Search</button>
         </form>

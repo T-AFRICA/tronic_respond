@@ -6,6 +6,7 @@ import {
   catalogQuery,
 } from "@/components/catalog/CatalogHeader";
 import { AddToCartButton } from "@/components/catalog/CartWidgets";
+import { ProductSearchBox } from "@/components/search/ProductSearchBox";
 
 export const dynamic = "force-dynamic";
 
@@ -82,12 +83,13 @@ export default async function CatalogPage({
           {lang === "sw" && <input type="hidden" name="lang" value="sw" />}
           {token && <input type="hidden" name="t" value={token} />}
           {sp.skus && <input type="hidden" name="skus" value={sp.skus} />}
-          <input
-            type="search"
-            name="q"
+          <ProductSearchBox
+            scope="catalog"
             defaultValue={sp.q ?? ""}
             placeholder={dict.search_placeholder}
-            className="flex-1 min-w-48 rounded border border-neutral-border bg-white px-3 py-2.5 text-sm"
+            className="flex-1 min-w-48"
+            inputClassName="w-full rounded border border-neutral-border bg-white pl-8 pr-8 py-2.5 text-sm"
+            linkParams={{ lang: lang === "sw" ? "sw" : undefined, t: token }}
           />
           <select
             name="category"

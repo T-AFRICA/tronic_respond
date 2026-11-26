@@ -1,5 +1,6 @@
-import { Search, LogOut, Menu } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { logout } from "@/app/login/actions";
+import { ProductSearchBox } from "@/components/search/ProductSearchBox";
 import {
   NotificationsBell,
   type NotificationItem,
@@ -38,16 +39,11 @@ export function Topbar({
       </button>
 
       {/* Global product search */}
-      <form action="/dashboard/products" className="relative w-full max-w-md">
-        <Search
-          size={15}
-          className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--ink-faint)] pointer-events-none"
-        />
-        <input
-          type="search"
-          name="q"
+      <form action="/dashboard/products" className="w-full max-w-md">
+        <ProductSearchBox
+          scope="admin"
           placeholder="Search products by SKU, name, brand…"
-          className="w-full h-8 rounded-[7px] border border-[var(--hairline)] bg-white pl-8 pr-3 text-[13px] placeholder:text-[var(--ink-faint)] focus:outline-none"
+          inputClassName="w-full h-8 rounded-[7px] border border-[var(--hairline)] bg-white pl-8 pr-8 text-[13px] placeholder:text-[var(--ink-faint)] focus:outline-none"
         />
       </form>
 
