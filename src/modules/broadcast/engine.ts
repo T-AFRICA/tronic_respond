@@ -5,6 +5,7 @@ import {
   getContactByPhone,
   createOrUpdateContact,
   sendTemplateMessage,
+  getMessageStatus,
   RespondIoError,
 } from "@/integrations/respondio/client";
 
@@ -43,6 +44,37 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * tronic_special_offers has an IMAGE header — Meta requires the header
  * parameter on every send (#132012 otherwise).
  */
+/**
+ * Respond.io accepts a message immediately, but WhatsApp/Meta may reject it
+ * moments later (e.g. template parameter errors). Poll the message status a
+ * few times so "sent" in our logs means WhatsApp actually accepted it.
+ */
+async function confirmDelivery(
+  contactId: string | number,
+  messageId: string | number,
+): Promise<{ ok: boolean; reason?: string }> {
+  for (const waitMs of [3000, 4000, 5000]) {
+    await sleep(waitMs);
+    try {
+      const st = await getMessageStatus(contactId, messageId);
+      const failedEntry = (st.status ?? []).find((s) => s.value === "failed");
+      if (failedEntry) {
+        return { ok: false, reason: failedEntry.message ?? "provider failure" };
+      }
+      const accepted =
+        Boolean(st.channelMessageId) ||
+        (st.status ?? []).some((s) =>
+          ["sent", "delivered", "read"].includes(s.value),
+        );
+      if (accepted) return { ok: true };
+    } catch {
+      // Status endpoint hiccup — keep polling; never fail a send on a read error.
+    }
+  }
+  // No definitive failure seen — treat as accepted (status may lag).
+  return { ok: true };
+}
+
 function templateComponents(): unknown[] {
   return [
     {
@@ -209,6 +241,15 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
           "en",
           templateComponents(),
         );
+
+        // Confirm WhatsApp actually accepted it before reporting success.
+        const delivery = res?.messageId
+          ? await confirmDelivery(contact.id, res.messageId)
+          : { ok: true as const };
+        if (!delivery.ok) {
+          throw new Error(`WhatsApp rejected the message: ${delivery.reason}`);
+        }
+
         sent++;
         await admin.from("message_logs").insert({
           respondio_contact_id: String(contact.id),

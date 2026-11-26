@@ -256,6 +256,23 @@ export async function sendTemplateMessage(
   });
 }
 
+/**
+ * Message delivery status (verified live 2026-11-26).
+ * `status` is a timeline; a "failed" entry carries Meta's reason
+ * (e.g. template parameter errors). channelMessageId is set once WhatsApp
+ * actually accepted the message.
+ */
+export async function getMessageStatus(
+  contactId: string | number,
+  messageId: string | number,
+) {
+  return request<{
+    messageId: number;
+    channelMessageId: string | null;
+    status?: { value: string; message?: string | null; timestamp?: number }[];
+  }>(`/contact/${contactIdentifier(contactId)}/message/${messageId}`);
+}
+
 // ---------- Space / channels (verified: GET /v2/space/channel tested live) ----------
 
 export type RespondIoChannel = {
