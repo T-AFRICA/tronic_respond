@@ -78,29 +78,36 @@ export type CatalogItemInput = {
 
 type BatchRequestEntry = {
   method: "UPDATE" | "DELETE";
-  retailer_id: string;
-  data?: Record<string, unknown>;
+  data: Record<string, unknown>;
 };
 
+/** Public catalog product page — the feed `link` field is required by Meta. */
+const DEFAULT_LINK_BASE = "https://tronic-respond.vercel.app";
+
 /**
- * Create or update items (UPDATE acts as upsert on retailer_id — this is the
- * core of duplicate prevention: one retailer_id, one catalog item).
+ * Create or update items (UPDATE acts as upsert on the feed `id` — this is
+ * the core of duplicate prevention: one retailer id, one catalog item).
+ *
+ * Verified live (2026-11-26): items_batch requires FEED-style field names
+ * (id/title/image_link/link) — retailer_id/name/image_url is rejected with
+ * "Can not find required field id".
  */
 export async function upsertCatalogItems(items: CatalogItemInput[]) {
   const catalogId = requireEnv("META_CATALOG_ID");
   const requests: BatchRequestEntry[] = items.map((item) => ({
     method: "UPDATE",
-    retailer_id: item.retailerId,
     data: {
-      name: item.name,
+      id: item.retailerId,
+      title: item.name,
       description: item.description,
-      image_url: item.imageUrl,
+      image_link: item.imageUrl,
+      link:
+        item.url ??
+        `${DEFAULT_LINK_BASE}/catalog/p/${encodeURIComponent(item.retailerId)}`,
       price: item.price,
-      currency: item.currency,
       availability: item.availability,
-      brand: item.brand,
-      url: item.url,
       condition: "new",
+      ...(item.brand ? { brand: item.brand } : {}),
     },
   }));
 
@@ -115,7 +122,7 @@ export async function deleteCatalogItems(retailerIds: string[]) {
   const catalogId = requireEnv("META_CATALOG_ID");
   const requests: BatchRequestEntry[] = retailerIds.map((retailerId) => ({
     method: "DELETE",
-    retailer_id: retailerId,
+    data: { id: retailerId },
   }));
   return graphRequest<{ handles: string[] }>(`/${catalogId}/items_batch`, {
     method: "POST",

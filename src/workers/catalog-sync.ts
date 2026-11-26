@@ -77,7 +77,12 @@ export async function runCatalogSyncJob(syncJobId: string): Promise<void> {
   );
 
   const catalogId = process.env.META_CATALOG_ID ?? "";
-  const linkBase = process.env.NEXT_PUBLIC_APP_URL;
+  // Meta fetches the `link` itself, so it must be the PUBLIC catalog URL —
+  // never localhost from a local worker.
+  const linkBase =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.APP_BASE_URL ??
+    "https://tronic-respond.vercel.app";
 
   let synced = 0;
   let failed = 0;
