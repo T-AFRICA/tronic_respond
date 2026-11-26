@@ -1,5 +1,6 @@
 import { requirePermission, hasPermission } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { changeOwnPassword, resetStaffPassword } from "./actions";
 
 export const metadata = { title: "Settings" };
@@ -76,10 +77,9 @@ export default async function SettingsPage({
               <label className={LABEL} htmlFor="new_password">
                 New password
               </label>
-              <input
+              <PasswordInput
                 id="new_password"
                 name="new_password"
-                type="password"
                 required
                 minLength={10}
                 autoComplete="new-password"
@@ -90,10 +90,9 @@ export default async function SettingsPage({
               <label className={LABEL} htmlFor="confirm_password">
                 Confirm new password
               </label>
-              <input
+              <PasswordInput
                 id="confirm_password"
                 name="confirm_password"
-                type="password"
                 required
                 minLength={10}
                 autoComplete="new-password"
@@ -152,10 +151,9 @@ export default async function SettingsPage({
                 <label className={LABEL} htmlFor="staff_new_password">
                   New password
                 </label>
-                <input
+                <PasswordInput
                   id="staff_new_password"
                   name="new_password"
-                  type="password"
                   required
                   minLength={10}
                   autoComplete="new-password"
@@ -166,10 +164,9 @@ export default async function SettingsPage({
                 <label className={LABEL} htmlFor="staff_confirm_password">
                   Confirm new password
                 </label>
-                <input
+                <PasswordInput
                   id="staff_confirm_password"
                   name="confirm_password"
-                  type="password"
                   required
                   minLength={10}
                   autoComplete="new-password"

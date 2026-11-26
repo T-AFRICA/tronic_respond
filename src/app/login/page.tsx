@@ -1,4 +1,5 @@
-import { Lock, Mail, ShieldCheck } from "lucide-react";
+import { Mail, ShieldCheck } from "lucide-react";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { login } from "./actions";
 
 export const metadata = { title: "Staff Sign In" };
@@ -116,21 +117,15 @@ export default async function LoginPage({
               >
                 Password
               </label>
-              <div className="relative">
-                <Lock
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-light/50 pointer-events-none"
-                />
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  className="w-full rounded-lg border border-neutral-border pl-9 pr-3 py-2.5 text-sm focus:outline-none"
-                />
-              </div>
+              <PasswordInput
+                id="password"
+                name="password"
+                required
+                autoComplete="current-password"
+                placeholder="••••••••"
+                withLockIcon
+                className="w-full rounded-lg border border-neutral-border pl-9 pr-3 py-2.5 text-sm focus:outline-none"
+              />
             </div>
 
             <button
