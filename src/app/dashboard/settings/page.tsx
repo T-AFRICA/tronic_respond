@@ -8,8 +8,6 @@ export const dynamic = "force-dynamic";
 const PW_ERRORS: Record<string, string> = {
   too_short: "The new password must be at least 10 characters.",
   mismatch: "The two password fields don't match.",
-  same_as_current: "The new password must be different from the current one.",
-  wrong_current: "The current password is incorrect.",
 };
 
 const STAFFPW_ERRORS: Record<string, string> = {
@@ -73,19 +71,6 @@ export default async function SettingsPage({
         )}
 
         <form action={changeOwnPassword} className="space-y-3 max-w-md">
-          <div>
-            <label className={LABEL} htmlFor="current_password">
-              Current password
-            </label>
-            <input
-              id="current_password"
-              name="current_password"
-              type="password"
-              required
-              autoComplete="current-password"
-              className={INPUT}
-            />
-          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={LABEL} htmlFor="new_password">

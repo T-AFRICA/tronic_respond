@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@supabase/supabase-js";
 import { requirePermission } from "@/lib/auth/session";
 import {
   createSupabaseServerClient,
@@ -17,31 +16,17 @@ function back(qs: string): never {
 
 /**
  * Change the signed-in staff member's own password.
- * The current password is verified first (sign-in check against a throwaway
- * client) so a left-open session can't silently take over the account.
+ * No current-password check: the signed-in session itself is the proof of
+ * identity (product decision — staff often reset before memorizing).
  */
 export async function changeOwnPassword(formData: FormData) {
   const profile = await requirePermission("settings.manage");
 
-  const current = String(formData.get("current_password") ?? "");
   const next = String(formData.get("new_password") ?? "");
   const confirm = String(formData.get("confirm_password") ?? "");
 
   if (next.length < MIN_PASSWORD_LENGTH) back("pw_error=too_short");
   if (next !== confirm) back("pw_error=mismatch");
-  if (next === current) back("pw_error=same_as_current");
-
-  // Verify the current password without touching the session cookie.
-  const verifier = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-  const { error: verifyError } = await verifier.auth.signInWithPassword({
-    email: profile.email,
-    password: current,
-  });
-  if (verifyError) back("pw_error=wrong_current");
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.updateUser({ password: next });
