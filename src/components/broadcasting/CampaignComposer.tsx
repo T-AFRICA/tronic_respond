@@ -9,6 +9,7 @@ import {
 
 type ProductHit = { id: string; sku: string; name: string; brand: string };
 type Segment = { id: string; name: string };
+export type TemplateOption = { name: string; body: string; isCatalog: boolean };
 
 const field =
   "w-full rounded border border-neutral-border px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-tronic-red/40";
@@ -22,7 +23,13 @@ const TYPES = [
   { value: "new_arrivals", label: "New arrivals" },
 ] as const;
 
-export function CampaignComposer({ segments }: { segments: Segment[] }) {
+export function CampaignComposer({
+  segments,
+  templates = [],
+}: {
+  segments: Segment[];
+  templates?: TemplateOption[];
+}) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [type, setType] = useState<(typeof TYPES)[number]["value"]>("multi_product");
@@ -141,15 +148,48 @@ export function CampaignComposer({ segments }: { segments: Segment[] }) {
 
         <div>
           <label className={label}>
-            Approved WhatsApp template name (required outside the 24h window)
+            Approved WhatsApp template (required outside the 24h window)
           </label>
-          <input
-            value={templateName}
-            onChange={(e) => setTemplateName(e.target.value)}
-            placeholder="e.g. product_promo_nov"
-            maxLength={200}
-            className={field}
-          />
+          {templates.length > 0 ? (
+            <>
+              <select
+                value={templateName}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setTemplateName(v);
+                  const t = templates.find((x) => x.name === v);
+                  if (t?.body && !body.trim()) setBody(t.body);
+                }}
+                className={field}
+              >
+                <option value="">— choose an approved template —</option>
+                {templates.map((t) => (
+                  <option key={t.name} value={t.name}>
+                    {t.name}
+                    {t.isCatalog ? "  (catalog — opens inside WhatsApp)" : ""}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[11px] text-charcoal-light mt-1">
+                Live list of approved templates on your WhatsApp channel
+                (Respond.io). Picking one fills the preview text below.
+              </p>
+            </>
+          ) : (
+            <>
+              <input
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                placeholder="e.g. product_promo_nov"
+                maxLength={200}
+                className={field}
+              />
+              <p className="text-[11px] text-charcoal-light mt-1">
+                Could not load the template list from Respond.io — type the
+                exact approved template name.
+              </p>
+            </>
+          )}
         </div>
         <div>
           <label className={label}>Message body / template preview text</label>

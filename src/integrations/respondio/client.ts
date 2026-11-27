@@ -256,6 +256,30 @@ export async function sendTemplateMessage(
   });
 }
 
+export type ChannelTemplate = {
+  id: number;
+  name: string;
+  languageCode?: string;
+  status: string;
+  category?: string;
+  components?: { type: string; format?: string; text?: string }[];
+};
+
+/**
+ * WhatsApp templates synced on the channel (verified live 2026-11-27:
+ * GET /space/channel/{id}/template). Used to populate template pickers so
+ * staff never type template names by hand.
+ */
+export async function listChannelTemplates(
+  channelId?: string | number,
+): Promise<ChannelTemplate[]> {
+  const channel = channelId ?? respondIoConfig.channelId();
+  const res = await request<{ items: ChannelTemplate[] }>(
+    `/space/channel/${channel}/template`,
+  );
+  return res.items ?? [];
+}
+
 /**
  * Message delivery status (verified live 2026-11-26).
  * `status` is a timeline; a "failed" entry carries Meta's reason
