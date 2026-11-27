@@ -33,50 +33,69 @@ type NavItem = {
   href: string;
   permission: string | null; // null = visible to all staff
   icon: LucideIcon;
+  description: string; // shown in the hover preview card
 };
 
 const NAV: { section: string; items: NavItem[] }[] = [
   {
     section: "",
     items: [
-      { label: "Overview", href: "/dashboard", permission: null, icon: LayoutDashboard },
+      { label: "Overview", href: "/dashboard", permission: null, icon: LayoutDashboard,
+        description: "Today's snapshot — campaigns, catalog health, quotations and recent WhatsApp activity." },
     ],
   },
   {
     section: "Catalog",
     items: [
-      { label: "Products", href: "/dashboard/products", permission: "products.read", icon: Package },
-      { label: "Product Images", href: "/dashboard/products/images", permission: "products.write", icon: ImageIcon },
-      { label: "Categories", href: "/dashboard/categories", permission: "products.read", icon: FolderTree },
-      { label: "Offers", href: "/dashboard/offers", permission: "offers.read", icon: BadgePercent },
-      { label: "Meta Catalog", href: "/dashboard/meta-catalog", permission: "products.read", icon: Store },
+      { label: "Products", href: "/dashboard/products", permission: "products.read", icon: Package,
+        description: "All products with prices, offer badges, publish status and Meta catalog sync." },
+      { label: "Product Images", href: "/dashboard/products/images", permission: "products.write", icon: ImageIcon,
+        description: "Upload and manage product photos; see which products are still missing an image." },
+      { label: "Categories", href: "/dashboard/categories", permission: "products.read", icon: FolderTree,
+        description: "Organise products into categories for easier browsing and filtering." },
+      { label: "Offers", href: "/dashboard/offers", permission: "offers.read", icon: BadgePercent,
+        description: "Create discount offers (e.g. -50%) and choose which products they apply to." },
+      { label: "Meta Catalog", href: "/dashboard/meta-catalog", permission: "products.read", icon: Store,
+        description: "Sync status with the WhatsApp/Meta catalog — what customers see inside WhatsApp." },
     ],
   },
   {
     section: "Customers",
     items: [
-      { label: "Customers", href: "/dashboard/customers", permission: "customers.read", icon: Users },
-      { label: "Segments", href: "/dashboard/segments", permission: "customers.read", icon: UsersRound },
-      { label: "Product Sharing", href: "/dashboard/sharing", permission: "sharing.send", icon: Share2 },
-      { label: "Broadcasting", href: "/dashboard/broadcasting", permission: "campaigns.read", icon: Megaphone },
-      { label: "Message History", href: "/dashboard/message-history", permission: "customers.read", icon: MessageSquareText },
+      { label: "Customers", href: "/dashboard/customers", permission: "customers.read", icon: Users,
+        description: "Customer directory — WhatsApp numbers, companies, tags and block status." },
+      { label: "Segments", href: "/dashboard/segments", permission: "customers.read", icon: UsersRound,
+        description: "Build target lists for campaigns — by activity filter, Excel upload or search." },
+      { label: "Product Sharing", href: "/dashboard/sharing", permission: "sharing.send", icon: Share2,
+        description: "Send product cards with photos and prices to a customer's WhatsApp chat." },
+      { label: "Broadcasting", href: "/dashboard/broadcasting", permission: "campaigns.read", icon: Megaphone,
+        description: "Create campaigns and send approved template broadcasts to whole segments." },
+      { label: "Message History", href: "/dashboard/message-history", permission: "customers.read", icon: MessageSquareText,
+        description: "Every inbound and outbound WhatsApp message the system has logged." },
     ],
   },
   {
     section: "Sales",
     items: [
-      { label: "Quotation Requests", href: "/dashboard/rfqs", permission: "rfqs.read", icon: Inbox },
-      { label: "Quotations", href: "/dashboard/quotations", permission: "quotations.read", icon: FileText },
+      { label: "Quotation Requests", href: "/dashboard/rfqs", permission: "rfqs.read", icon: Inbox,
+        description: "Incoming quotation requests from customers, ready to be picked up." },
+      { label: "Quotations", href: "/dashboard/quotations", permission: "quotations.read", icon: FileText,
+        description: "Create, send and track quotations and their statuses." },
     ],
   },
   {
     section: "Administration",
     items: [
-      { label: "Staff Management", href: "/dashboard/staff", permission: "staff.manage", icon: UserCog },
-      { label: "Reports", href: "/dashboard/reports", permission: "reports.read", icon: BarChart3 },
-      { label: "Integrations", href: "/dashboard/integrations", permission: "integrations.manage", icon: Plug },
-      { label: "Audit Logs", href: "/dashboard/audit-logs", permission: "audit.read", icon: ScrollText },
-      { label: "Settings", href: "/dashboard/settings", permission: "settings.manage", icon: Settings },
+      { label: "Staff Management", href: "/dashboard/staff", permission: "staff.manage", icon: UserCog,
+        description: "Invite staff accounts and control their roles and permissions." },
+      { label: "Reports", href: "/dashboard/reports", permission: "reports.read", icon: BarChart3,
+        description: "Performance reports — sales, campaigns and catalog statistics." },
+      { label: "Integrations", href: "/dashboard/integrations", permission: "integrations.manage", icon: Plug,
+        description: "Connection health for Respond.io, Meta and the worker queue." },
+      { label: "Audit Logs", href: "/dashboard/audit-logs", permission: "audit.read", icon: ScrollText,
+        description: "Full audit trail — who did what and when, across the whole system." },
+      { label: "Settings", href: "/dashboard/settings", permission: "settings.manage", icon: Settings,
+        description: "System settings — test allowlist, live broadcast switch and defaults." },
     ],
   },
 ];
@@ -93,6 +112,24 @@ export function Sidebar({
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  // Hover preview card — fixed-positioned so the nav's scroll container
+  // can't clip it; desktop only (mobile has no hover).
+  const [tip, setTip] = useState<{
+    label: string;
+    description: string;
+    top: number;
+    left: number;
+  } | null>(null);
+
+  function showTip(item: NavItem, el: HTMLElement) {
+    const rect = el.getBoundingClientRect();
+    setTip({
+      label: item.label,
+      description: item.description,
+      top: Math.max(8, Math.min(rect.top, window.innerHeight - 120)),
+      left: rect.right + 10,
+    });
+  }
 
   useEffect(() => {
     setCollapsed(localStorage.getItem("tr-sidebar-collapsed") === "1");
@@ -177,8 +214,12 @@ export function Sidebar({
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={onNavigate}
-                    title={isCollapsed ? item.label : undefined}
+                    onClick={() => {
+                      setTip(null);
+                      onNavigate?.();
+                    }}
+                    onMouseEnter={(e) => showTip(item, e.currentTarget)}
+                    onMouseLeave={() => setTip(null)}
                     className={clsx(
                       "group flex items-center gap-2.5 text-[13.5px] mx-2 mb-px rounded-[7px] border",
                       isCollapsed ? "justify-center px-0 py-2" : "px-3 py-[6.5px]",
@@ -208,6 +249,21 @@ export function Sidebar({
           );
         })}
       </nav>
+
+      {/* Hover preview card (desktop only) */}
+      {tip && (
+        <div
+          className="hidden lg:block fixed z-50 w-60 pointer-events-none rounded-lg border border-white/10 bg-[#232327] shadow-xl px-3.5 py-2.5"
+          style={{ top: tip.top, left: tip.left }}
+        >
+          <p className="text-[13px] font-semibold text-white leading-tight">
+            {tip.label}
+          </p>
+          <p className="text-xs text-white/70 leading-snug mt-1">
+            {tip.description}
+          </p>
+        </div>
+      )}
 
       {/* Collapse toggle */}
       <button
