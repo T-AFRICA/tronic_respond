@@ -78,10 +78,16 @@ export async function ExecutionPanel({
       templateName
         ? supabase
             .from("message_templates")
-            .select("status, last_checked_at")
+            .select("status, category, last_checked_at")
             .eq("name", templateName)
             .limit(1)
-        : Promise.resolve({ data: [] as { status: string; last_checked_at: string | null }[] }),
+        : Promise.resolve({
+            data: [] as {
+              status: string;
+              category: string;
+              last_checked_at: string | null;
+            }[],
+          }),
     ]);
 
   const allowlist: string[] = Array.isArray(
@@ -325,14 +331,22 @@ export async function ExecutionPanel({
               {template?.last_checked_at &&
                 ` Last checked ${new Date(template.last_checked_at).toLocaleString()}.`}
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <select name="status" defaultValue={template?.status ?? "pending"} className={input}>
                 <option value="pending">pending</option>
                 <option value="approved">approved</option>
                 <option value="rejected">rejected</option>
                 <option value="unknown">unknown</option>
               </select>
-              <button className="text-xs border border-neutral-border rounded px-3 hover:border-charcoal-light">
+              <select
+                name="format"
+                defaultValue={template?.category === "catalog" ? "catalog" : "standard"}
+                className={input}
+              >
+                <option value="standard">standard (image header)</option>
+                <option value="catalog">catalog (no header)</option>
+              </select>
+              <button className="text-xs border border-neutral-border rounded px-3 py-1.5 hover:border-charcoal-light">
                 Save
               </button>
             </div>

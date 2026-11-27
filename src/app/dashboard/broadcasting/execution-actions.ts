@@ -210,6 +210,10 @@ export async function setTemplateStatus(
   if (!["unknown", "pending", "approved", "rejected"].includes(status)) {
     back(campaignId, "exec_error=template_status");
   }
+  // Template format decides the send payload: catalog templates must NOT
+  // receive the image-header component (they cannot have a media header).
+  const format = String(formData.get("format") ?? "standard");
+  const category = format === "catalog" ? "catalog" : "marketing";
   const supabase = await createSupabaseServerClient();
   await supabase
     .from("message_templates")
@@ -218,6 +222,7 @@ export async function setTemplateStatus(
         name: templateName,
         language_code: "en",
         status,
+        category,
         last_checked_at: new Date().toISOString(),
         updated_by: profile.id,
       },

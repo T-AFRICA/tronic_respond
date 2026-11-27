@@ -58,10 +58,6 @@ type Job = {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * tronic_special_offers has an IMAGE header — Meta requires the header
- * parameter on every send (#132012 otherwise).
- */
-/**
  * Respond.io accepts a message immediately, but WhatsApp/Meta may reject it
  * moments later (e.g. template parameter errors). Poll the message status a
  * few times so "sent" in our logs means WhatsApp actually accepted it.
@@ -92,7 +88,15 @@ async function confirmDelivery(
   return { ok: true };
 }
 
-function templateComponents(): unknown[] {
+/**
+ * Standard marketing templates (e.g. tronic_special_offers) have an IMAGE
+ * header — Meta requires the header parameter on every send (#132012
+ * otherwise). Catalog-format templates (message_templates.category =
+ * 'catalog', e.g. tronic_special_offers_v2) cannot carry a media header at
+ * all, so no components are sent for them.
+ */
+function templateComponents(isCatalog: boolean): unknown[] | undefined {
+  if (isCatalog) return undefined;
   return [
     {
       type: "header",
@@ -143,6 +147,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
   }
 
   // ---------- Gates ----------
+  let isCatalogTemplate = false;
   if (job.kind !== "dry_run") {
     if (!campaign.template_name) {
       await failJob(
@@ -154,9 +159,10 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
     }
     const { data: templates } = await admin
       .from("message_templates")
-      .select("status")
+      .select("status, category")
       .eq("name", campaign.template_name)
       .limit(1);
+    isCatalogTemplate = templates?.[0]?.category === "catalog";
     if (!templates?.length || templates[0].status !== "approved") {
       await failJob(
         admin,
@@ -256,7 +262,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
           contact.id,
           campaign.template_name,
           "en",
-          templateComponents(),
+          templateComponents(isCatalogTemplate),
         );
 
         // Confirm WhatsApp actually accepted it before reporting success.
@@ -403,7 +409,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
             contactRef,
             campaign.template_name,
             "en",
-            templateComponents(),
+            templateComponents(isCatalogTemplate),
           );
         } catch (e) {
           // Imported customers may not exist in Respond.io yet — create the
@@ -427,7 +433,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
               String(createdContact.id),
               campaign.template_name,
               "en",
-              templateComponents(),
+              templateComponents(isCatalogTemplate),
             );
           } else {
             throw e;
