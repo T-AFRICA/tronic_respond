@@ -12,6 +12,7 @@ import {
   BadgePercent,
   Store,
   Users,
+  UsersRound,
   Share2,
   Megaphone,
   MessageSquareText,
@@ -55,6 +56,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
     section: "Customers",
     items: [
       { label: "Customers", href: "/dashboard/customers", permission: "customers.read", icon: Users },
+      { label: "Segments", href: "/dashboard/segments", permission: "customers.read", icon: UsersRound },
       { label: "Product Sharing", href: "/dashboard/sharing", permission: "sharing.send", icon: Share2 },
       { label: "Broadcasting", href: "/dashboard/broadcasting", permission: "campaigns.read", icon: Megaphone },
       { label: "Message History", href: "/dashboard/message-history", permission: "customers.read", icon: MessageSquareText },
