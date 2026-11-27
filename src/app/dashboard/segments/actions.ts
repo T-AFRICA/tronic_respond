@@ -141,6 +141,8 @@ export async function addMembersByFilter(payload: unknown) {
 const phonesSchema = z.object({
   segmentId: z.string().uuid(),
   text: z.string().max(100_000),
+  /** Create customer records for numbers not in the system yet. */
+  createMissing: z.boolean().default(true),
 });
 
 /** Normalize a pasted number to E.164-ish for matching (TZ default for 0-prefixed). */
@@ -158,7 +160,7 @@ export async function addMembersByPhones(payload: unknown) {
   await requirePermission("customers.write");
   const parsed = phonesSchema.safeParse(payload);
   if (!parsed.success) return { ok: false as const, error: "Invalid input." };
-  const { segmentId, text } = parsed.data;
+  const { segmentId, text, createMissing } = parsed.data;
 
   const tokens = text.split(/[\n,;]+/).map((t) => t.trim()).filter(Boolean);
   if (tokens.length === 0) {
@@ -189,7 +191,51 @@ export async function addMembersByPhones(payload: unknown) {
     for (const c of data ?? []) found.set(c.whatsapp_phone, c.id);
   }
 
-  const notFound = phoneList.filter((p) => !found.has(p));
+  let notFound = phoneList.filter((p) => !found.has(p));
+  let created = 0;
+
+  // Numbers not in the system yet: create them as customers right here so
+  // an imported list is immediately broadcastable (no Respond.io sync needed —
+  // the broadcast engine creates the Respond.io contact on first send).
+  if (createMissing && notFound.length > 0) {
+    const { data: country } = await supabase
+      .from("countries")
+      .select("id")
+      .eq("is_active", true)
+      .order("id")
+      .limit(1)
+      .single();
+    if (!country) {
+      return { ok: false as const, error: "No active country configured." };
+    }
+
+    for (let i = 0; i < notFound.length; i += 500) {
+      const chunk = notFound.slice(i, i + 500).map((whatsapp_phone) => ({
+        whatsapp_phone,
+        country_id: country.id,
+        tags: ["imported"],
+      }));
+      const { error } = await supabase
+        .from("customers")
+        .upsert(chunk, { onConflict: "whatsapp_phone", ignoreDuplicates: true });
+      if (error) return { ok: false as const, error: error.message };
+    }
+
+    // Re-select to pick up the new ids (and any concurrent winners).
+    for (let i = 0; i < notFound.length; i += 500) {
+      const chunk = notFound.slice(i, i + 500);
+      const { data } = await supabase
+        .from("customers")
+        .select("id, whatsapp_phone")
+        .in("whatsapp_phone", chunk);
+      for (const c of data ?? []) {
+        if (!found.has(c.whatsapp_phone)) created++;
+        found.set(c.whatsapp_phone, c.id);
+      }
+    }
+    notFound = phoneList.filter((p) => !found.has(p));
+  }
+
   const added = await insertMembers(segmentId, [...found.values()]);
   if (added.error) return { ok: false as const, error: added.error };
 
@@ -197,7 +243,8 @@ export async function addMembersByPhones(payload: unknown) {
   return {
     ok: true as const,
     parsed: phoneList.length,
-    matched: found.size,
+    matched: found.size - created,
+    created,
     added: added.inserted,
     notFound: notFound.slice(0, 30),
     notFoundTotal: notFound.length,

@@ -35,6 +35,7 @@ export function AddMembersPanel({ segmentId }: { segmentId: string }) {
 
   // --- Paste tab ---
   const [pasted, setPasted] = useState("");
+  const [createMissing, setCreateMissing] = useState(true);
 
   // --- Search tab ---
   const [term, setTerm] = useState("");
@@ -149,16 +150,21 @@ export function AddMembersPanel({ segmentId }: { segmentId: string }) {
   const applyPaste = () =>
     startWork(async () => {
       setMessage(null);
-      const res = await addMembersByPhones({ segmentId, text: pasted });
+      const res = await addMembersByPhones({
+        segmentId,
+        text: pasted,
+        createMissing,
+      });
       if (res.ok) {
         const parts = [
           `${res.parsed} numbers read`,
           `${res.matched} matched existing customers`,
-          `${res.added} newly added`,
         ];
+        if (res.created > 0) parts.push(`${res.created} new customers created`);
+        parts.push(`${res.added} added to the segment`);
         if (res.notFoundTotal > 0) {
           parts.push(
-            `${res.notFoundTotal} not in the customer list (sync from Respond.io first): ${res.notFound.join(", ")}${res.notFoundTotal > res.notFound.length ? "…" : ""}`,
+            `${res.notFoundTotal} not in the customer list: ${res.notFound.join(", ")}${res.notFoundTotal > res.notFound.length ? "…" : ""}`,
           );
         }
         if (res.invalidTotal > 0) {
@@ -301,6 +307,15 @@ export function AddMembersPanel({ segmentId }: { segmentId: string }) {
               placeholder={"One number per line (commas also work):\n+255712345678\n0712345678\n+60142539112"}
               className={`${field} w-full font-mono text-xs`}
             />
+            <label className="flex items-center gap-2 text-sm text-charcoal">
+              <input
+                type="checkbox"
+                checked={createMissing}
+                onChange={(e) => setCreateMissing(e.target.checked)}
+                className="accent-tronic-red"
+              />
+              Create new customers for numbers not in the system yet
+            </label>
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -311,8 +326,8 @@ export function AddMembersPanel({ segmentId }: { segmentId: string }) {
                 {busy ? "Matching…" : "Match & add"}
               </button>
               <p className="text-xs text-charcoal-light">
-                Numbers starting with 0 are treated as Tanzanian (+255). Only
-                numbers that already exist as customers are added.
+                Numbers starting with 0 are treated as Tanzanian (+255). New
+                customers are tagged &quot;imported&quot;.
               </p>
             </div>
           </div>

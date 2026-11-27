@@ -379,12 +379,42 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
       if (!claimed || claimed.length === 0) continue; // already handled elsewhere
 
       try {
-        const res = await sendTemplateMessage(
-          contactRef,
-          campaign.template_name,
-          "en",
-          templateComponents(),
-        );
+        let res;
+        try {
+          res = await sendTemplateMessage(
+            contactRef,
+            campaign.template_name,
+            "en",
+            templateComponents(),
+          );
+        } catch (e) {
+          // Imported customers may not exist in Respond.io yet — create the
+          // contact once and retry, persisting the new contact id.
+          if (
+            e instanceof RespondIoError &&
+            e.status === 404 &&
+            customer.whatsapp_phone &&
+            !customer.respondio_contact_id
+          ) {
+            const createdContact = await createOrUpdateContact(
+              customer.whatsapp_phone,
+            );
+            if (!createdContact?.id) throw e;
+            await admin
+              .from("customers")
+              .update({ respondio_contact_id: String(createdContact.id) })
+              .eq("id", customer.id);
+            customer.respondio_contact_id = String(createdContact.id);
+            res = await sendTemplateMessage(
+              String(createdContact.id),
+              campaign.template_name,
+              "en",
+              templateComponents(),
+            );
+          } else {
+            throw e;
+          }
+        }
         sent++;
         await admin
           .from("campaign_recipients")
