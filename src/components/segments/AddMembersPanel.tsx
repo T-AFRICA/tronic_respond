@@ -96,6 +96,56 @@ export function AddMembersPanel({ segmentId }: { segmentId: string }) {
       } else report(res.error, true);
     });
 
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setMessage(null);
+    try {
+      let text = "";
+      if (/\.(xlsx|xls)$/i.test(file.name)) {
+        const XLSX = await import("xlsx");
+        const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+        const parts: string[] = [];
+        for (const name of wb.SheetNames) {
+          const rows = XLSX.utils.sheet_to_json<unknown[]>(wb.Sheets[name], {
+            header: 1,
+            raw: true,
+          });
+          for (const row of rows) {
+            for (const cell of row ?? []) {
+              if (cell === null || cell === undefined) continue;
+              parts.push(
+                typeof cell === "number" ? cell.toFixed(0) : String(cell),
+              );
+            }
+          }
+        }
+        text = parts.join("\n");
+      } else {
+        text = await file.text();
+      }
+
+      // Keep only values that look like phone numbers (9–15 digits).
+      const candidates = text
+        .split(/[\s,;|]+/)
+        .map((t) => t.trim().replace(/[\-().]/g, ""))
+        .filter((t) => /^\+?\d{9,15}$/.test(t));
+      const unique = [...new Set(candidates)];
+
+      if (unique.length === 0) {
+        report("No phone-like values found in that file.", true);
+        return;
+      }
+      setPasted(unique.join("\n"));
+      report(
+        `${unique.length} numbers loaded from ${file.name} — check the list below, then press "Match & add".`,
+      );
+    } catch {
+      report("Could not read that file — save it as .xlsx or .csv and try again.", true);
+    }
+  };
+
   const applyPaste = () =>
     startWork(async () => {
       setMessage(null);
@@ -229,6 +279,21 @@ export function AddMembersPanel({ segmentId }: { segmentId: string }) {
 
         {tab === "paste" && (
           <div className="space-y-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <label className="text-sm border border-neutral-border bg-white rounded px-4 py-2 hover:border-charcoal-light cursor-pointer">
+                Upload Excel / CSV…
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv,.txt"
+                  onChange={onFile}
+                  className="hidden"
+                />
+              </label>
+              <p className="text-xs text-charcoal-light">
+                Phone numbers are picked out of the file automatically — any
+                column, any sheet.
+              </p>
+            </div>
             <textarea
               value={pasted}
               onChange={(e) => setPasted(e.target.value)}

@@ -149,6 +149,7 @@ function normalizePhone(raw: string): string | null {
   if (!s) return null;
   if (s.startsWith("00")) s = `+${s.slice(2)}`;
   if (/^0\d{9}$/.test(s)) s = `+255${s.slice(1)}`; // local TZ format 0XXXXXXXXX
+  if (/^[67]\d{8}$/.test(s)) s = `+255${s}`; // Excel drops the leading 0 from 07XX/06XX
   if (/^\d+$/.test(s)) s = `+${s}`;
   return /^\+[1-9]\d{6,14}$/.test(s) ? s : null;
 }
