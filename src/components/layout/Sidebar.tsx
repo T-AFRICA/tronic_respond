@@ -127,6 +127,7 @@ export function Sidebar({
   } | null>(null);
   const [warm, setWarm] = useState<string[]>([]);
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const asideRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     return () => {
@@ -135,7 +136,11 @@ export function Sidebar({
   }, []);
 
   function queuePreview(item: NavItem, el: HTMLElement) {
-    const left = el.getBoundingClientRect().right + 12;
+    // Flush with the sidebar's right edge so the preview covers the whole
+    // content area at full size.
+    const left =
+      asideRef.current?.getBoundingClientRect().right ??
+      el.getBoundingClientRect().right + 8;
     if (previewTimer.current) clearTimeout(previewTimer.current);
     previewTimer.current = setTimeout(() => {
       setWarm((w) => (w.includes(item.href) ? w : [...w, item.href]));
@@ -177,6 +182,7 @@ export function Sidebar({
 
   return (
     <aside
+      ref={asideRef}
       className={clsx(
         "shrink-0 bg-[#1a1a1d] text-white flex flex-col transition-[width,transform] duration-200",
         // Desktop: sticky column (collapsible). Mobile: off-canvas drawer.
@@ -284,18 +290,18 @@ export function Sidebar({
             !preview && "invisible",
           )}
           style={{
-            top: 12,
-            bottom: 12,
-            left: preview?.left ?? 244,
-            right: 12,
+            top: 0,
+            bottom: 0,
+            left: preview?.left ?? 232,
+            right: 0,
           }}
         >
-          <div className="h-full rounded-xl border border-neutral-border bg-white shadow-2xl overflow-hidden flex flex-col">
-            <div className="px-4 py-2.5 border-b border-neutral-border bg-neutral-bg shrink-0 flex items-baseline gap-2 flex-wrap">
-              <p className="text-sm font-semibold text-charcoal">
+          <div className="h-full bg-white overflow-hidden flex flex-col">
+            <div className="px-4 py-1.5 border-b border-neutral-border bg-neutral-bg shrink-0 flex items-baseline gap-2 flex-wrap">
+              <p className="text-[13px] font-semibold text-charcoal">
                 {preview?.label}
               </p>
-              <p className="text-xs text-charcoal-light">
+              <p className="text-xs text-charcoal-light truncate">
                 {preview?.description} · Click to open the page
               </p>
             </div>
@@ -309,15 +315,9 @@ export function Sidebar({
                   src={href}
                   title={`Preview of ${href}`}
                   className={clsx(
-                    "absolute top-0 left-0 border-0",
+                    "absolute inset-0 w-full h-full border-0",
                     preview?.href !== href && "hidden",
                   )}
-                  style={{
-                    width: "133.4%",
-                    height: "133.4%",
-                    transform: "scale(0.75)",
-                    transformOrigin: "top left",
-                  }}
                 />
               ))}
             </div>
