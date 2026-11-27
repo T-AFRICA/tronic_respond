@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -272,8 +273,11 @@ export function Sidebar({
       </nav>
 
       {/* Hover live-preview panel (desktop only) — shows the hovered page
-          over the content area without clicking. */}
-      {warm.length > 0 && (
+          over the content area without clicking. Rendered through a portal:
+          the aside has a CSS transform, which would otherwise turn it into
+          the containing block for this fixed-position panel. */}
+      {warm.length > 0 &&
+        createPortal(
         <div
           className={clsx(
             "hidden lg:block fixed z-50 pointer-events-none",
@@ -318,7 +322,8 @@ export function Sidebar({
               ))}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {/* Collapse toggle */}
