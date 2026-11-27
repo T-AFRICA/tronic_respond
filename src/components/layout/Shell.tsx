@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import type { NotificationItem } from "@/components/layout/NotificationsBell";
@@ -25,6 +25,20 @@ export function Shell({
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  // When the page is rendered inside the sidebar's hover-preview iframe,
+  // show only the content — no sidebar/topbar chrome inside the preview.
+  const [embedded, setEmbedded] = useState(false);
+  useEffect(() => {
+    if (window.self !== window.top) setEmbedded(true);
+  }, []);
+
+  if (embedded) {
+    return (
+      <main className="min-h-screen p-4 sm:p-6 bg-[var(--surface-canvas)]">
+        {children}
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">

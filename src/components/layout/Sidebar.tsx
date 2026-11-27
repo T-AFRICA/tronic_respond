@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -112,23 +112,44 @@ export function Sidebar({
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  // Hover preview card — fixed-positioned so the nav's scroll container
-  // can't clip it; desktop only (mobile has no hover).
-  const [tip, setTip] = useState<{
+  // Hover live-preview: after a short hover-intent delay, the target page is
+  // rendered in an iframe panel over the content area (desktop only). The
+  // panel is fixed-positioned so the nav's scroll container can't clip it,
+  // and pointer-events-none so it vanishes as soon as the mouse leaves the
+  // sidebar item. Visited pages stay mounted (hidden) so re-hovering is
+  // instant.
+  const [preview, setPreview] = useState<{
+    href: string;
     label: string;
     description: string;
-    top: number;
     left: number;
   } | null>(null);
+  const [warm, setWarm] = useState<string[]>([]);
+  const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function showTip(item: NavItem, el: HTMLElement) {
-    const rect = el.getBoundingClientRect();
-    setTip({
-      label: item.label,
-      description: item.description,
-      top: Math.max(8, Math.min(rect.top, window.innerHeight - 120)),
-      left: rect.right + 10,
-    });
+  useEffect(() => {
+    return () => {
+      if (previewTimer.current) clearTimeout(previewTimer.current);
+    };
+  }, []);
+
+  function queuePreview(item: NavItem, el: HTMLElement) {
+    const left = el.getBoundingClientRect().right + 12;
+    if (previewTimer.current) clearTimeout(previewTimer.current);
+    previewTimer.current = setTimeout(() => {
+      setWarm((w) => (w.includes(item.href) ? w : [...w, item.href]));
+      setPreview({
+        href: item.href,
+        label: item.label,
+        description: item.description,
+        left,
+      });
+    }, 350);
+  }
+
+  function cancelPreview() {
+    if (previewTimer.current) clearTimeout(previewTimer.current);
+    setPreview(null);
   }
 
   useEffect(() => {
@@ -215,11 +236,11 @@ export function Sidebar({
                     key={item.href}
                     href={item.href}
                     onClick={() => {
-                      setTip(null);
+                      cancelPreview();
                       onNavigate?.();
                     }}
-                    onMouseEnter={(e) => showTip(item, e.currentTarget)}
-                    onMouseLeave={() => setTip(null)}
+                    onMouseEnter={(e) => queuePreview(item, e.currentTarget)}
+                    onMouseLeave={cancelPreview}
                     className={clsx(
                       "group flex items-center gap-2.5 text-[13.5px] mx-2 mb-px rounded-[7px] border",
                       isCollapsed ? "justify-center px-0 py-2" : "px-3 py-[6.5px]",
@@ -250,18 +271,53 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Hover preview card (desktop only) */}
-      {tip && (
+      {/* Hover live-preview panel (desktop only) — shows the hovered page
+          over the content area without clicking. */}
+      {warm.length > 0 && (
         <div
-          className="hidden lg:block fixed z-50 w-60 pointer-events-none rounded-lg border border-white/10 bg-[#232327] shadow-xl px-3.5 py-2.5"
-          style={{ top: tip.top, left: tip.left }}
+          className={clsx(
+            "hidden lg:block fixed z-50 pointer-events-none",
+            !preview && "invisible",
+          )}
+          style={{
+            top: 12,
+            bottom: 12,
+            left: preview?.left ?? 244,
+            right: 12,
+          }}
         >
-          <p className="text-[13px] font-semibold text-white leading-tight">
-            {tip.label}
-          </p>
-          <p className="text-xs text-white/70 leading-snug mt-1">
-            {tip.description}
-          </p>
+          <div className="h-full rounded-xl border border-neutral-border bg-white shadow-2xl overflow-hidden flex flex-col">
+            <div className="px-4 py-2.5 border-b border-neutral-border bg-neutral-bg shrink-0 flex items-baseline gap-2 flex-wrap">
+              <p className="text-sm font-semibold text-charcoal">
+                {preview?.label}
+              </p>
+              <p className="text-xs text-charcoal-light">
+                {preview?.description} · Click to open the page
+              </p>
+            </div>
+            <div className="flex-1 relative overflow-hidden bg-white">
+              <p className="absolute inset-0 flex items-center justify-center text-sm text-charcoal-light">
+                Loading preview…
+              </p>
+              {warm.map((href) => (
+                <iframe
+                  key={href}
+                  src={href}
+                  title={`Preview of ${href}`}
+                  className={clsx(
+                    "absolute top-0 left-0 border-0",
+                    preview?.href !== href && "hidden",
+                  )}
+                  style={{
+                    width: "133.4%",
+                    height: "133.4%",
+                    transform: "scale(0.75)",
+                    transformOrigin: "top left",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
