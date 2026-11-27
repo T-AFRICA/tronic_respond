@@ -6,8 +6,25 @@ import {
   createOrUpdateContact,
   sendTemplateMessage,
   getMessageStatus,
+  addContactTags,
   RespondIoError,
 } from "@/integrations/respondio/client";
+
+/**
+ * Tag the contact with the campaign name after a successful send, so
+ * Respond.io Workflows can auto-assign repliers (condition: contact tag).
+ * Tagging must never fail the send itself.
+ */
+async function tagContactSafely(
+  contactRef: string | number,
+  campaignName: string,
+): Promise<void> {
+  try {
+    await addContactTags(contactRef, [campaignName]);
+  } catch {
+    // non-fatal — assignment workflows just won't match this contact
+  }
+}
 
 /**
  * Campaign execution engine — consumed by the BullMQ `campaign-send` worker.
@@ -260,6 +277,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
           body_preview: `[TEST] template:${campaign.template_name}`,
           campaign_id: campaign.id,
         });
+        await tagContactSafely(contact.id, campaign.name);
       } catch (e) {
         failed++;
         await admin.from("message_logs").insert({
@@ -435,6 +453,10 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
           body_preview: `template:${campaign.template_name}`,
           campaign_id: campaign.id,
         });
+        await tagContactSafely(
+          customer.respondio_contact_id ?? `phone:${customer.whatsapp_phone}`,
+          campaign.name,
+        );
       } catch (e) {
         failed++;
         await admin
