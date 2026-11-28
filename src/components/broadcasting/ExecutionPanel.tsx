@@ -161,7 +161,12 @@ export async function ExecutionPanel({
             <p className="text-sm font-semibold">Dry run</p>
             <p className="text-xs text-charcoal-light">
               Validates recipients and counts sends. Nothing is transmitted.
+              Customers who already received this template count as skipped.
             </p>
+            <label className="flex items-center gap-2 text-xs text-charcoal-light">
+              <input type="checkbox" name="allow_resend" />
+              Count already-sent customers too (resend)
+            </label>
             <button className="text-sm border border-neutral-border bg-white rounded px-3 py-1.5 hover:border-charcoal-light">
               Start dry run
             </button>
@@ -196,8 +201,13 @@ export async function ExecutionPanel({
             <p className="text-xs text-charcoal-light">
               One consolidated template message per eligible customer. Requires:
               approved campaign, approved template, env flag AND in-app switch.
-              Runs once per campaign — ever.
+              Runs once per campaign — ever. Customers who already received
+              this template are skipped unless you allow a resend below.
             </p>
+            <label className="flex items-center gap-2 text-xs text-charcoal-light">
+              <input type="checkbox" name="allow_resend" />
+              Allow resend to already-sent customers
+            </label>
             <label className="text-xs text-charcoal-light block">
               Batch size
               <input

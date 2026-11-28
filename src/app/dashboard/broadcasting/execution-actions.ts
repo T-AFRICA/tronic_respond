@@ -103,7 +103,12 @@ export async function startCampaignExecution(
       campaign_id: campaignId,
       kind,
       batch_size: batchSize,
-      params: kind === "test" ? { test_numbers: testNumbers } : {},
+      params:
+        kind === "test"
+          ? { test_numbers: testNumbers }
+          : // Default: customers who already received this template are
+            // skipped. The operator must tick "allow resend" to override.
+            { allow_resend: formData.get("allow_resend") === "on" },
       requested_by: profile.id,
     })
     .select("id")
@@ -136,7 +141,12 @@ export async function startCampaignExecution(
     action: `campaigns.execute_${kind}`,
     entity_type: "campaign",
     entity_id: campaignId,
-    after: { job_id: job.id, batch_size: batchSize, test_numbers: testNumbers },
+    after: {
+      job_id: job.id,
+      batch_size: batchSize,
+      test_numbers: testNumbers,
+      allow_resend: formData.get("allow_resend") === "on",
+    },
   });
 
   revalidatePath(`/dashboard/broadcasting/${campaignId}`);

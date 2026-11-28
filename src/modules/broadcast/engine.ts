@@ -44,6 +44,9 @@ async function tagContactSafely(
  *  - a recipient is "claimed" by moving status queued→unknown before the API
  *    call; the outcome then settles it to sent/failed. A crash leaves it at
  *    'unknown' — resumed jobs NEVER resend 'unknown' recipients.
+ *  - customers who already received the campaign's template in ANY earlier
+ *    campaign are skipped (suppressed), unless the job carries the explicit
+ *    operator override params.allow_resend = true.
  *  - pause/cancel are honored between batches.
  */
 
@@ -54,7 +57,7 @@ type Job = {
   status: string;
   batch_size: number;
   batch_delay_ms: number;
-  params: { test_numbers?: string[] } | null;
+  params: { test_numbers?: string[]; allow_resend?: boolean } | null;
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -364,6 +367,28 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
   }
 
   // ---------- DRY RUN / LIVE: campaign recipients ----------
+
+  // A customer who already received this template (any earlier campaign) is
+  // skipped, unless the operator explicitly ticked "allow resend" on this job.
+  const allowResend = job.params?.allow_resend === true;
+  const alreadySent = new Set<string>();
+  if (!allowResend && campaign.template_name) {
+    for (let fromIdx = 0; ; fromIdx += 1000) {
+      const { data: logs } = await admin
+        .from("message_logs")
+        .select("customer_id")
+        .eq("direction", "outbound")
+        .eq("kind", "template")
+        .eq("status", "sent")
+        .eq("body_preview", `template:${campaign.template_name}`)
+        .not("customer_id", "is", null)
+        .order("id")
+        .range(fromIdx, fromIdx + 999);
+      for (const l of logs ?? []) alreadySent.add(String(l.customer_id));
+      if (!logs || logs.length < 1000) break;
+    }
+  }
+
   const { count: total } = await admin
     .from("campaign_recipients")
     .select("id", { count: "exact", head: true })
@@ -430,6 +455,23 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
                 : customer.is_blocked
                   ? "blocked"
                   : "no phone / contact id",
+            })
+            .eq("id", recipient.id)
+            .eq("status", "queued");
+        }
+        continue;
+      }
+
+      // Already received this template — never resend without an explicit
+      // operator override (allow_resend) on the job.
+      if (alreadySent.has(recipient.customer_id)) {
+        skipped++;
+        if (job.kind === "live") {
+          await admin
+            .from("campaign_recipients")
+            .update({
+              suppressed: true,
+              suppressed_reason: "already_received_template",
             })
             .eq("id", recipient.id)
             .eq("status", "queued");
