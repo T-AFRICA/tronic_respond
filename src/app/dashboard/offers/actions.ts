@@ -78,8 +78,10 @@ export async function createOffer(payload: unknown) {
   const data = parsed.data;
 
   if (data.pricing_mode === "percentage") {
-    if (data.discount_value === null || data.discount_value <= 0 || data.discount_value >= 100) {
-      return { ok: false as const, error: "Percentage discount must be between 0 and 100." };
+    // 0% is allowed: the offer then uses the current retail price unchanged
+    // (prices in the system are already final/discounted).
+    if (data.discount_value === null || data.discount_value < 0 || data.discount_value >= 100) {
+      return { ok: false as const, error: "Percentage discount must be between 0 and 99." };
     }
   }
   if (data.pricing_mode === "fixed_price" && (data.discount_value === null || data.discount_value <= 0)) {
