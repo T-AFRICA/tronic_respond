@@ -41,7 +41,7 @@ export const respondIoConfig = {
    */
   templateHeaderImageUrl: () =>
     env("BROADCAST_HEADER_IMAGE_URL") ??
-    "https://tronic-respond.vercel.app/brand/offer-header.jpg?v=3",
+    "https://www.tronic.ltd/brand/offer-header.jpg?v=3",
 };
 
 /**

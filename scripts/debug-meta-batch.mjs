@@ -39,7 +39,7 @@ const item = {
     title: p.name,
     description: p.description || p.name,
     image_link: img.public_url,
-    link: `https://tronic-respond.vercel.app/catalog/p/${encodeURIComponent(p.sku)}`,
+    link: `https://www.tronic.ltd/catalog/p/${encodeURIComponent(p.sku)}`,
     price: `${Number(price.amount).toFixed(2)} ${p.currency || "TZS"}`,
     availability: "in stock",
     brand: p.brand || undefined,

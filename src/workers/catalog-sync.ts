@@ -82,7 +82,7 @@ export async function runCatalogSyncJob(syncJobId: string): Promise<void> {
   const linkBase =
     process.env.NEXT_PUBLIC_APP_URL ??
     process.env.APP_BASE_URL ??
-    "https://tronic-respond.vercel.app";
+    "https://www.tronic.ltd";
 
   let synced = 0;
   let failed = 0;

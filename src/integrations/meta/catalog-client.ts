@@ -82,7 +82,7 @@ type BatchRequestEntry = {
 };
 
 /** Public catalog product page — the feed `link` field is required by Meta. */
-const DEFAULT_LINK_BASE = "https://tronic-respond.vercel.app";
+const DEFAULT_LINK_BASE = "https://www.tronic.ltd";
 
 /**
  * Create or update items (UPDATE acts as upsert on the feed `id` — this is
