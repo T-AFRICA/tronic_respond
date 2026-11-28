@@ -36,10 +36,12 @@ export const respondIoConfig = {
    * Public image URL for the template's IMAGE header. Meta rejects sends of
    * media-header templates without a header parameter (#132012), and fetches
    * this URL itself — so it must be publicly reachable (not localhost).
+   * The ?v= query busts Meta/WhatsApp's media cache: bump it whenever
+   * public/brand/offer-header.jpg is replaced, or stale banners get sent.
    */
   templateHeaderImageUrl: () =>
     env("BROADCAST_HEADER_IMAGE_URL") ??
-    "https://tronic-respond.vercel.app/brand/offer-header.jpg",
+    "https://tronic-respond.vercel.app/brand/offer-header.jpg?v=3",
 };
 
 /**
