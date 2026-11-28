@@ -55,7 +55,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
       { label: "Categories", href: "/dashboard/categories", permission: "products.read", icon: FolderTree,
         description: "Organise products into categories for easier browsing and filtering." },
       { label: "Offers", href: "/dashboard/offers", permission: "offers.read", icon: BadgePercent,
-        description: "Create discount offers (e.g. -50%) and choose which products they apply to." },
+        description: "Create special offers and choose which products they apply to." },
       { label: "Meta Catalog", href: "/dashboard/meta-catalog", permission: "products.read", icon: Store,
         description: "Sync status with the WhatsApp/Meta catalog — what customers see inside WhatsApp." },
     ],

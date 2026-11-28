@@ -80,7 +80,7 @@ export default async function ProductsPage({
           .in("product_id", ids),
         supabase
           .from("active_offer_products")
-          .select("product_id, offer_price, discount_percent")
+          .select("product_id, offer_price")
           .in("product_id", ids),
       ])
     : [{ data: [] }, { data: [] }, { data: [] }];
@@ -291,9 +291,7 @@ export default async function ProductsPage({
                     {offer ? (
                       <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-tronic-red text-white rounded-full px-2 py-0.5">
                         <BadgePercent size={11} />
-                        {offer.discount_percent !== null
-                          ? `-${Number(offer.discount_percent)}%`
-                          : Number(offer.offer_price).toLocaleString()}
+                        {Number(offer.offer_price).toLocaleString()}
                       </span>
                     ) : (
                       <span className="text-charcoal-light text-xs">—</span>

@@ -38,7 +38,7 @@ export default async function OffersCatalogPage({
   let query = supabase
     .from("active_offer_products")
     .select(
-      "product_id, sku, product_name, category_id, ends_at, offer_price, reference_price, currency, discount_percent",
+      "product_id, sku, product_name, category_id, ends_at, offer_price, currency",
       { count: "exact" },
     )
     .eq("price_verified", true)
@@ -126,18 +126,11 @@ export default async function OffersCatalogPage({
             {(rows ?? []).map((r) => {
               const image = imageOf(r.product_id);
               const offerPrice = Number(r.offer_price);
-              const ref = r.reference_price !== null ? Number(r.reference_price) : null;
-              const disc = r.discount_percent !== null ? Number(r.discount_percent) : null;
               return (
                 <div
                   key={r.product_id}
                   className="bg-white border border-neutral-border rounded-lg overflow-hidden flex flex-col relative"
                 >
-                  {disc !== null && disc > 0 && (
-                    <span className="absolute top-2 left-2 z-10 bg-tronic-red text-white text-[11px] font-bold rounded px-1.5 py-0.5">
-                      -{disc}%
-                    </span>
-                  )}
                   <Link
                     href={`/catalog/p/${encodeURIComponent(r.sku)}${catalogQuery(lang, token, baseExtra)}`}
                     className="block"
@@ -169,14 +162,6 @@ export default async function OffersCatalogPage({
                     <p className="text-sm font-bold text-tronic-red">
                       {offerPrice.toLocaleString()} {r.currency}
                     </p>
-                    {ref !== null && ref > offerPrice && (
-                      <p className="text-xs text-charcoal-light">
-                        <s>{ref.toLocaleString()}</s>{" "}
-                        <span className="text-green-700">
-                          {dict.you_save} {(ref - offerPrice).toLocaleString()}
-                        </span>
-                      </p>
-                    )}
                     {r.ends_at && (
                       <p className="text-[11px] text-charcoal-light">
                         {dict.offer_valid_until}{" "}

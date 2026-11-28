@@ -66,7 +66,7 @@ export default async function OfferDetailPage({
       supabase
         .from("offer_products")
         .select(
-          "id, offer_price, reference_price, currency, price_verified, products(sku, name, visibility)",
+          "id, offer_price, currency, price_verified, products(sku, name, visibility)",
           { count: "exact" },
         )
         .eq("offer_id", id)
@@ -153,8 +153,8 @@ export default async function OfferDetailPage({
       {sp.imported && (
         <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2">
           Pilot products imported as a draft offer. The imported RE price is used
-          as the offer price unchanged (it is already discounted). Reference
-          prices are pilot assumptions — verify before activating.
+          as the offer price unchanged (it is already the final discounted
+          price) — verify before activating.
         </p>
       )}
       {sp.activated && (
@@ -189,19 +189,14 @@ export default async function OfferDetailPage({
             <tr>
               <th>SKU</th>
               <th>Product</th>
-              <th>Reference</th>
               <th>Offer price</th>
-              <th>Discount</th>
               <th>Verified</th>
             </tr>
           </thead>
           <tbody>
             {(items ?? []).map((row) => {
               const product = Array.isArray(row.products) ? row.products[0] : row.products;
-              const ref = row.reference_price !== null ? Number(row.reference_price) : null;
               const priceNum = Number(row.offer_price);
-              const disc =
-                ref && ref > 0 ? Math.round((1 - priceNum / ref) * 100) : null;
               return (
                 <tr key={row.id}>
                   <td className="font-mono text-xs">{product?.sku}</td>
@@ -213,13 +208,9 @@ export default async function OfferDetailPage({
                       </span>
                     )}
                   </td>
-                  <td className="text-charcoal-light">
-                    {ref !== null ? ref.toLocaleString() : "—"}
-                  </td>
                   <td className="font-semibold text-tronic-red">
                     {priceNum.toLocaleString()} {row.currency}
                   </td>
-                  <td>{disc !== null ? `-${disc}%` : "—"}</td>
                   <td>
                     {row.price_verified ? (
                       <span className="text-xs text-green-700">✓ verified</span>

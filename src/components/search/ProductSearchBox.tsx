@@ -197,7 +197,7 @@ export function ProductSearchBox({
                           {it.sku}
                           {it.offer && (
                             <span className="ml-1.5 font-sans text-tronic-red font-semibold">
-                              −{Math.round(it.offer.discount ?? 0)}%
+                              {money(it.offer.price, it.price?.currency ?? "TZS")}
                             </span>
                           )}
                         </span>
@@ -243,13 +243,14 @@ export function ProductSearchBox({
                               current.price?.currency ?? "TZS",
                             )}
                           </span>
-                          {current.price && (
-                            <span className="text-[12px] text-[var(--ink-faint)] line-through">
-                              {money(current.price.amount, current.price.currency)}
-                            </span>
-                          )}
+                          {current.price &&
+                            Number(current.price.amount) > current.offer.price && (
+                              <span className="text-[12px] text-[var(--ink-faint)] line-through">
+                                {money(current.price.amount, current.price.currency)}
+                              </span>
+                            )}
                           <span className="text-[10.5px] font-semibold text-tronic-red bg-tronic-red-soft border border-tronic-red/20 rounded-full px-2 py-0.5">
-                            −{Math.round(current.offer.discount ?? 0)}% offer
+                            offer
                           </span>
                         </>
                       ) : current.price ? (
