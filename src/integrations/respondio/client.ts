@@ -262,7 +262,12 @@ export type ChannelTemplate = {
   languageCode?: string;
   status: string;
   category?: string;
-  components?: { type: string; format?: string; text?: string }[];
+  components?: {
+    type: string;
+    format?: string;
+    text?: string;
+    buttons?: { type?: string; text?: string; url?: string }[];
+  }[];
 };
 
 /**

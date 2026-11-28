@@ -7,8 +7,10 @@ import {
   sendTemplateMessage,
   getMessageStatus,
   addContactTags,
+  listChannelTemplates,
   RespondIoError,
 } from "@/integrations/respondio/client";
+import { signCatalogToken } from "@/lib/catalog/links";
 
 /**
  * Tag the contact with the campaign name after a successful send, so
@@ -95,16 +97,55 @@ async function confirmDelivery(
  * 'catalog', e.g. tronic_special_offers_v2) cannot carry a media header at
  * all, so no components are sent for them.
  */
-function templateComponents(isCatalog: boolean): unknown[] | undefined {
-  if (isCatalog) return undefined;
-  return [
-    {
+function templateComponents(
+  isCatalog: boolean,
+  urlButtonIndex: number | null = null,
+  urlParam: string | null = null,
+): unknown[] | undefined {
+  const comps: unknown[] = [];
+  if (!isCatalog) {
+    comps.push({
       type: "header",
       parameters: [
         { type: "image", image: { link: respondIoConfig.templateHeaderImageUrl() } },
       ],
-    },
-  ];
+    });
+  }
+  // Templates with a dynamic URL button (…?t={{1}}) REQUIRE the parameter on
+  // every send — it carries the customer's signed catalog token so the public
+  // quotation form can pre-fill their name/number. "x" is a harmless filler
+  // when no token can be made (verifyCatalogToken ignores invalid tokens).
+  if (urlButtonIndex !== null) {
+    comps.push({
+      type: "button",
+      sub_type: "url",
+      index: urlButtonIndex,
+      parameters: [{ type: "text", text: urlParam || "x" }],
+    });
+  }
+  return comps.length > 0 ? comps : undefined;
+}
+
+/**
+ * Detect whether the template's URL button ends in a {{1}} variable, and at
+ * which button position. Returns null for fully static buttons (older
+ * templates keep working unchanged).
+ */
+async function detectDynamicUrlButton(
+  templateName: string,
+): Promise<number | null> {
+  try {
+    const defs = await listChannelTemplates();
+    const def = defs.find((d) => d.name === templateName);
+    const buttons =
+      def?.components?.find((c) => /button/i.test(c.type))?.buttons ?? [];
+    const idx = buttons.findIndex(
+      (b) => typeof b.url === "string" && b.url.includes("{{1}}"),
+    );
+    return idx >= 0 ? idx : null;
+  } catch {
+    return null; // listing hiccup — send without button params (static behavior)
+  }
 }
 
 async function failJob(admin: SupabaseClient, jobId: string, error: string) {
@@ -148,6 +189,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
 
   // ---------- Gates ----------
   let isCatalogTemplate = false;
+  let urlButtonIndex: number | null = null;
   if (job.kind !== "dry_run") {
     if (!campaign.template_name) {
       await failJob(
@@ -171,6 +213,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
       );
       return;
     }
+    urlButtonIndex = await detectDynamicUrlButton(campaign.template_name);
   }
 
   const allowlist = await getAllowlist(admin);
@@ -258,11 +301,21 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
             `contact resolution for ${phone} returned no id (${JSON.stringify(contact).slice(0, 200)})`,
           );
         }
+        // Test numbers may map to a known customer — personalize if so.
+        let testToken: string | null = null;
+        if (urlButtonIndex !== null) {
+          const { data: cust } = await admin
+            .from("customers")
+            .select("id")
+            .eq("whatsapp_phone", phone)
+            .maybeSingle();
+          testToken = cust ? signCatalogToken(cust.id) : null;
+        }
         const res = await sendTemplateMessage(
           contact.id,
           campaign.template_name,
           "en",
-          templateComponents(isCatalogTemplate),
+          templateComponents(isCatalogTemplate, urlButtonIndex, testToken),
         );
 
         // Confirm WhatsApp actually accepted it before reporting success.
@@ -403,13 +456,17 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
       if (!claimed || claimed.length === 0) continue; // already handled elsewhere
 
       try {
+        // Per-customer signed catalog token for dynamic URL buttons: the link
+        // the customer opens pre-fills the quotation form with their details.
+        const liveToken =
+          urlButtonIndex !== null ? signCatalogToken(customer.id) : null;
         let res;
         try {
           res = await sendTemplateMessage(
             contactRef,
             campaign.template_name,
             "en",
-            templateComponents(isCatalogTemplate),
+            templateComponents(isCatalogTemplate, urlButtonIndex, liveToken),
           );
         } catch (e) {
           // Imported customers may not exist in Respond.io yet — create the
@@ -433,7 +490,7 @@ export async function runCampaignSendJob(campaignJobId: string): Promise<void> {
               String(createdContact.id),
               campaign.template_name,
               "en",
-              templateComponents(isCatalogTemplate),
+              templateComponents(isCatalogTemplate, urlButtonIndex, liveToken),
             );
           } else {
             throw e;

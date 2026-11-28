@@ -4,6 +4,8 @@ import {
   catalogQuery,
 } from "@/components/catalog/CatalogHeader";
 import { CartView } from "@/components/catalog/CartView";
+import { verifyCatalogToken } from "@/lib/catalog/links";
+import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your Selection — TRONIC" };
@@ -18,6 +20,29 @@ export default async function CatalogCartPage({
   const dict = t(lang);
   const token = sp.t;
 
+  // Personalized link (?t=<signed token> from a broadcast): pre-fill the
+  // quotation form with the known customer's details. Invalid/expired tokens
+  // are simply ignored — the form stays blank.
+  let initial: { name: string; phone: string; company: string } | undefined;
+  if (token) {
+    const customerId = verifyCatalogToken(token);
+    if (customerId) {
+      const admin = createSupabaseAdminClient();
+      const { data: customer } = await admin
+        .from("customers")
+        .select("full_name, whatsapp_phone, company_name")
+        .eq("id", customerId)
+        .maybeSingle();
+      if (customer) {
+        initial = {
+          name: customer.full_name ?? "",
+          phone: customer.whatsapp_phone ?? "",
+          company: customer.company_name ?? "",
+        };
+      }
+    }
+  }
+
   return (
     <>
       <CatalogHeader lang={lang} dict={dict} token={token} />
@@ -27,6 +52,7 @@ export default async function CatalogCartPage({
           dict={dict}
           catalogHref={`/catalog${catalogQuery(lang, token)}`}
           token={token}
+          initial={initial}
         />
         {process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && (
           <p className="text-center">

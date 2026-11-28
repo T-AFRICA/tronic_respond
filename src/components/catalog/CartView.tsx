@@ -52,16 +52,19 @@ export function CartView({
   dict,
   catalogHref,
   token,
+  initial,
 }: {
   dict: CatalogDict;
   catalogHref: string;
   token?: string;
+  /** Pre-filled details resolved server-side from a personalized link token. */
+  initial?: { name: string; phone: string; company: string };
 }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [company, setCompany] = useState("");
+  const [name, setName] = useState(initial?.name ?? "");
+  const [phone, setPhone] = useState(initial?.phone ?? "");
+  const [company, setCompany] = useState(initial?.company ?? "");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [result, setResult] = useState<
