@@ -16,6 +16,38 @@ import type { CatalogDict } from "@/lib/catalog/i18n";
 const field =
   "w-full rounded border border-neutral-border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-tronic-red/40";
 
+/** Business WhatsApp number (digits only) the request is forwarded to. */
+const BUSINESS_WA =
+  (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "+255726370922").replace(/\D/g, "");
+
+function buildWhatsAppUrl(args: {
+  reference: string;
+  name: string;
+  phone: string;
+  company: string;
+  address: string;
+  notes: string;
+  items: CartItem[];
+}): string {
+  const lines = [
+    `Quotation Request ${args.reference}`,
+    `Name: ${args.name}`,
+    `WhatsApp: ${args.phone}`,
+    args.company ? `Company: ${args.company}` : "",
+    args.address ? `Address: ${args.address}` : "",
+    "",
+    "Products:",
+    ...args.items.map(
+      (i) =>
+        `• ${i.qty} x ${i.name} (${i.sku})${
+          i.price !== null ? ` — ${i.price.toLocaleString()} ${i.currency}` : ""
+        }`,
+    ),
+    args.notes ? `\nNotes: ${args.notes}` : "",
+  ].filter((l) => l !== "");
+  return `https://wa.me/${BUSINESS_WA}?text=${encodeURIComponent(lines.join("\n"))}`;
+}
+
 export function CartView({
   dict,
   catalogHref,
@@ -30,9 +62,10 @@ export function CartView({
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [company, setCompany] = useState("");
+  const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [result, setResult] = useState<
-    | { kind: "sent"; reference: string }
+    | { kind: "sent"; reference: string; waUrl: string }
     | { kind: "error"; text: string }
     | null
   >(null);
@@ -52,14 +85,25 @@ export function CartView({
         name,
         phone,
         company,
+        address,
         notes,
         token,
         website: "",
         items: items.map((i) => ({ sku: i.sku, qty: i.qty })),
       });
       if (res.ok) {
+        // Build the WhatsApp hand-off BEFORE clearing the cart.
+        const waUrl = buildWhatsAppUrl({
+          reference: res.reference,
+          name,
+          phone,
+          company,
+          address,
+          notes,
+          items,
+        });
         clearCart();
-        setResult({ kind: "sent", reference: res.reference });
+        setResult({ kind: "sent", reference: res.reference, waUrl });
       } else {
         setResult({
           kind: "error",
@@ -76,9 +120,18 @@ export function CartView({
         <p className="text-3xl">✅</p>
         <p className="text-sm">{dict.request_sent}</p>
         <p className="text-sm font-mono font-bold">{result.reference}</p>
+        <p className="text-xs text-charcoal-light">{dict.whatsapp_hint}</p>
+        <a
+          href={result.waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full text-sm bg-[#25D366] hover:bg-[#1ebe5b] text-white font-semibold rounded px-4 py-3"
+        >
+          {dict.send_whatsapp} →
+        </a>
         <Link
           href={catalogHref}
-          className="inline-block text-sm bg-tronic-red hover:bg-tronic-red-dark text-white font-semibold rounded px-4 py-2"
+          className="inline-block text-sm text-charcoal-light hover:text-tronic-red underline underline-offset-2"
         >
           {dict.browse_catalog}
         </Link>
@@ -181,6 +234,14 @@ export function CartView({
           onChange={(e) => setCompany(e.target.value)}
           placeholder={dict.your_company}
           maxLength={160}
+          className={field}
+        />
+        <textarea
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder={dict.your_address}
+          rows={2}
+          maxLength={300}
           className={field}
         />
         <textarea

@@ -40,11 +40,15 @@ const dict = {
     your_name: "Your name",
     your_phone: "WhatsApp number (e.g. +2557…)",
     your_company: "Company (optional)",
+    your_address: "Complete address",
     notes: "Notes for our sales team (optional)",
     submit_request: "Submit Quotation Request",
     submitting: "Submitting…",
     request_sent:
       "Thank you! Your quotation request has been received. Our sales team will contact you on WhatsApp shortly.",
+    send_whatsapp: "Send it to us on WhatsApp",
+    whatsapp_hint:
+      "Tap below to also send your request directly to our WhatsApp — one tap, message is ready",
     request_ref: "Your reference",
     request_error: "Something went wrong — please try again or contact us on WhatsApp.",
     phone_invalid: "Please enter a valid WhatsApp number including country code.",
@@ -91,11 +95,15 @@ const dict = {
     your_name: "Jina lako",
     your_phone: "Namba ya WhatsApp (mf. +2557…)",
     your_company: "Kampuni (hiari)",
+    your_address: "Anwani kamili",
     notes: "Ujumbe kwa timu yetu ya mauzo (hiari)",
     submit_request: "Tuma Ombi la Nukuu ya Bei",
     submitting: "Inatuma…",
     request_sent:
       "Asante! Ombi lako la nukuu ya bei limepokelewa. Timu yetu ya mauzo itawasiliana nawe kupitia WhatsApp hivi karibuni.",
+    send_whatsapp: "Tutumie kupitia WhatsApp",
+    whatsapp_hint:
+      "Gusa hapa chini kutuma ombi lako moja kwa moja kwenye WhatsApp yetu — ujumbe uko tayari",
     request_ref: "Kumbukumbu yako",
     request_error: "Hitilafu imetokea — tafadhali jaribu tena au wasiliana nasi WhatsApp.",
     phone_invalid: "Tafadhali weka namba sahihi ya WhatsApp pamoja na msimbo wa nchi.",

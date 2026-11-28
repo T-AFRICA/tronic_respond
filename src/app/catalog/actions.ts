@@ -18,6 +18,7 @@ const submitSchema = z.object({
   name: z.string().trim().min(2).max(120),
   phone: z.string().trim().min(7).max(20),
   company: z.string().trim().max(160).default(""),
+  address: z.string().trim().max(300).default(""),
   notes: z.string().trim().max(1000).default(""),
   token: z.string().max(500).optional(),
   website: z.string().max(0).optional(), // honeypot — must stay empty
@@ -121,13 +122,21 @@ export async function submitCatalogRfq(payload: unknown): Promise<
   const productMap = new Map((products ?? []).map((p) => [p.sku, p]));
 
   // ----- Create RFQ -----
+  // The customers table has no address column, so the delivery address is
+  // kept on the RFQ itself where sales reads it.
+  const customerNotes = [
+    data.address ? `Address: ${data.address}` : "",
+    data.notes,
+  ]
+    .filter(Boolean)
+    .join("\n");
   const { data: rfq, error: rfqError } = await admin
     .from("rfqs")
     .insert({
       customer_id: customerId,
       source: "external_catalog",
       status: "new",
-      customer_notes: data.notes,
+      customer_notes: customerNotes,
       idempotency_key: `catalog:${crypto.randomUUID()}`,
     })
     .select("id, reference")
