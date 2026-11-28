@@ -8,6 +8,7 @@ import {
   setCampaignStatus,
 } from "../actions";
 import { ExecutionPanel } from "@/components/broadcasting/ExecutionPanel";
+import { DeliveryReport } from "@/components/broadcasting/DeliveryReport";
 
 export const metadata = { title: "Campaign" };
 export const dynamic = "force-dynamic";
@@ -33,6 +34,10 @@ export default async function CampaignDetailPage({
     error?: string;
     exec_error?: string;
     exec_started?: string;
+    delivery_refreshed?: string;
+    delivery_changed?: string;
+    resend_error?: string;
+    resent_from?: string;
   }>;
 }) {
   const profile = await requirePermission("campaigns.read");
@@ -139,6 +144,12 @@ export default async function CampaignDetailPage({
         </div>
       </div>
 
+      {sp.resent_from && (
+        <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2">
+          Resend campaign created with only the undelivered customers of the
+          original campaign. It is pre-approved — start its live send below.
+        </p>
+      )}
       {sp.requested && (
         <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2">
           Submitted — managers have been notified for approval.
@@ -253,6 +264,17 @@ export default async function CampaignDetailPage({
         execError={sp.exec_error}
         execStarted={sp.exec_started}
       />
+
+      {!["draft", "pending_approval", "rejected"].includes(campaign.status) && (
+        <DeliveryReport
+          campaignId={id}
+          canWrite={canWrite}
+          canApprove={canApprove}
+          refreshed={sp.delivery_refreshed}
+          changed={sp.delivery_changed}
+          resendError={sp.resend_error}
+        />
+      )}
 
       {(products ?? []).length > 0 && (
         <div className="border border-neutral-border rounded-lg overflow-hidden">
