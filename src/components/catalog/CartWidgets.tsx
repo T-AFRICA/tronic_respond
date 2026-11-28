@@ -28,11 +28,26 @@ export function CartBadge({
   return (
     <Link
       href={href}
-      className="relative inline-flex items-center gap-1.5 text-sm font-semibold bg-white text-tronic-red rounded px-3 py-1.5"
+      className="relative inline-flex items-center gap-1.5 text-xs font-bold bg-charcoal text-white rounded-full pl-3 pr-3.5 py-2 shadow-sm hover:bg-black transition-colors"
+      title={label}
     >
-      {label}
+      <svg
+        className="h-4 w-4 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+        <path d="M3 6h18" />
+        <path d="M16 10a4 4 0 0 1-8 0" />
+      </svg>
+      <span className="hidden sm:inline">{label}</span>
       {count > 0 && (
-        <span className="bg-charcoal text-white text-[11px] rounded-full px-1.5 py-0.5 leading-none">
+        <span className="absolute -top-1.5 -right-1.5 bg-white text-tronic-red border border-tronic-red/30 text-[10px] font-black rounded-full min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center leading-none shadow-sm">
           {count}
         </span>
       )}
@@ -90,10 +105,10 @@ export function AddToCartButton({
         onClick={() =>
           addToCart({ sku, name, price, currency, image_url: imageUrl }, qty)
         }
-        className={`text-sm font-semibold rounded px-3 py-2 transition-colors ${
+        className={`flex-1 inline-flex items-center justify-center gap-1.5 text-sm font-semibold rounded-lg px-3 py-2 transition-all ${
           added
             ? "bg-green-50 text-green-700 border border-green-200"
-            : "bg-tronic-red hover:bg-tronic-red-dark text-white"
+            : "bg-tronic-red hover:bg-tronic-red-dark text-white shadow-sm hover:shadow"
         }`}
       >
         {added ? `✓ ${addedLabel}` : label}
