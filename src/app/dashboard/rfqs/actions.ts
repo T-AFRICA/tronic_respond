@@ -118,6 +118,18 @@ export async function createQuotationFromRfq(rfqId: string) {
         },
       ),
     );
+
+    // Keep the quotation header in sync — otherwise a quotation that goes
+    // straight to PDF/approval without a builder save shows 0 totals.
+    const subtotal = mappedItems.reduce(
+      (sum: number, item: { product_id: string; quantity: number }) =>
+        sum + retailPrice(item.product_id) * item.quantity,
+      0,
+    );
+    await supabase
+      .from("quotations")
+      .update({ subtotal, grand_total: subtotal })
+      .eq("id", quotation.id);
   }
 
   await supabase.from("rfqs").update({ status: "quoted" }).eq("id", rfqId);

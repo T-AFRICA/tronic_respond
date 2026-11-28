@@ -31,6 +31,7 @@ const BANNERS: Record<string, { ok: boolean; text: string }> = {
   norespondio: { ok: false, text: "Respond.io is not configured (RESPOND_IO_API_TOKEN)." },
   nocontact: { ok: false, text: "This customer has no Respond.io contact ID — link it on the customer record, or send the PDF manually from the Respond.io inbox." },
   sendfailed: { ok: false, text: "Respond.io rejected the send — check Integrations and retry, or deliver manually from the inbox." },
+  window: { ok: false, text: "WhatsApp's 24-hour window is closed for this customer — PDFs can only be delivered after the customer messages the business. Ask them to send any message to the business number, then press Send again." },
   sign: { ok: false, text: "Could not create a secure document link." },
   pdfupload: { ok: false, text: "PDF storage failed — try again." },
 };

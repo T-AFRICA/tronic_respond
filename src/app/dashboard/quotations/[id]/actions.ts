@@ -19,6 +19,7 @@ import { renderQuotationPdf } from "@/modules/quotations/pdf";
 import {
   sendDocumentMessage,
   sendTextMessage,
+  getMessageStatus,
 } from "@/integrations/respondio/client";
 import type { QuotationStatus } from "@/lib/types";
 import { respondIoConfig } from "@/lib/config";
@@ -407,35 +408,84 @@ export async function sendQuotation(quotationId: string) {
     redirect(`/dashboard/quotations/${quotationId}?error=sign`);
   }
 
+  let result: { messageId: number } | undefined;
   try {
-    const result = await sendDocumentMessage(
+    result = await sendDocumentMessage(
       customer.respondio_contact_id,
       signed.signedUrl,
       `${q.reference}.pdf`,
     );
-    await sendTextMessage(
-      customer.respondio_contact_id,
-      `Your TRONIC quotation ${q.reference} is attached. It is valid until ${
-        q.valid_until ?? "the date stated in the document"
-      }. Reply here to accept, ask questions, or request changes.`,
-    ).catch(() => undefined); // companion text is best-effort
-
-    await admin.from("message_logs").insert({
-      customer_id: customer.id,
-      respondio_contact_id: customer.respondio_contact_id,
-      respondio_message_id: result?.messageId
-        ? String(result.messageId)
-        : null,
-      direction: "outbound",
-      kind: "document",
-      status: "sent",
-      body_preview: `Quotation ${q.reference} v${q.version}`,
-      quotation_id: quotationId,
-      sent_by: profile.id,
-    });
   } catch {
     redirect(`/dashboard/quotations/${quotationId}?error=sendfailed`);
   }
+
+  // Respond.io accepts the message first; WhatsApp may still reject it moments
+  // later (most commonly: the 24h customer-service window is closed, since a
+  // PDF is a session message, not a template). Poll so "sent" means delivered
+  // to WhatsApp — otherwise staff would see success for a message nobody got.
+  let failReason: string | null = null;
+  if (result?.messageId) {
+    for (const waitMs of [3000, 4000, 5000]) {
+      await new Promise((r) => setTimeout(r, waitMs));
+      try {
+        const st = await getMessageStatus(
+          customer.respondio_contact_id,
+          result.messageId,
+        );
+        const failedEntry = (st.status ?? []).find((s) => s.value === "failed");
+        if (failedEntry) {
+          failReason = failedEntry.message ?? "provider failure";
+          break;
+        }
+        const accepted =
+          Boolean(st.channelMessageId) ||
+          (st.status ?? []).some((s) =>
+            ["sent", "delivered", "read"].includes(s.value),
+          );
+        if (accepted) break;
+      } catch {
+        // status read hiccup — keep polling, never fail the send on a read error
+      }
+    }
+  }
+
+  if (failReason) {
+    await admin.from("message_logs").insert({
+      customer_id: customer.id,
+      respondio_contact_id: customer.respondio_contact_id,
+      respondio_message_id: result?.messageId ? String(result.messageId) : null,
+      direction: "outbound",
+      kind: "document",
+      status: "failed",
+      body_preview: `Quotation ${q.reference} v${q.version} — ${failReason}`.slice(0, 500),
+      quotation_id: quotationId,
+      sent_by: profile.id,
+    });
+    redirect(
+      `/dashboard/quotations/${quotationId}?error=${
+        /window/i.test(failReason) ? "window" : "sendfailed"
+      }`,
+    );
+  }
+
+  await sendTextMessage(
+    customer.respondio_contact_id,
+    `Your TRONIC quotation ${q.reference} is attached. It is valid until ${
+      q.valid_until ?? "the date stated in the document"
+    }. Reply here to accept, ask questions, or request changes.`,
+  ).catch(() => undefined); // companion text is best-effort
+
+  await admin.from("message_logs").insert({
+    customer_id: customer.id,
+    respondio_contact_id: customer.respondio_contact_id,
+    respondio_message_id: result?.messageId ? String(result.messageId) : null,
+    direction: "outbound",
+    kind: "document",
+    status: "sent",
+    body_preview: `Quotation ${q.reference} v${q.version}`,
+    quotation_id: quotationId,
+    sent_by: profile.id,
+  });
 
   await supabase
     .from("quotations")
